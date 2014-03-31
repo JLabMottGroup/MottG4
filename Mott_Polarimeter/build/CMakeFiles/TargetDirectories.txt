@@ -1,0 +1,2 @@
+/home/mjmchugh/MottG4/Mott_Polarimeter/build/CMakeFiles/MOTT.dir
+/home/mjmchugh/MottG4/Mott_Polarimeter/build/CMakeFiles/mott.dir

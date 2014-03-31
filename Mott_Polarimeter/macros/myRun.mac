@@ -1,0 +1,21 @@
+
+
+# Run 0: 10 MeV, No Target
+/Beam/SetBeamEnergy 10 MeV
+/Target/TargetOut 
+/run/beamOn 100000
+
+# Run 1: 5 MeV, No Target
+/Beam/SetBeamEnergy 5 MeV
+/Target/TargetOut 
+/run/beamOn 100000
+
+# Run 3: 10 MeV, 1 um Au Target
+/Beam/SetBeamEnergy 10 MeV
+/Target/TargetIn
+/run/beamOn 100000
+
+# Run 4: 3 MeV, 1 um Au Target
+/Beam/SetBeamEnergy 3 MeV
+/Target/TargetIn 
+/run/beamOn 100000

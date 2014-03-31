@@ -1,0 +1,9 @@
+# File determines filetypes to be igored
+*.o
+*.a
+*~
+
+#Things in the output directory
+output/*.err
+output/*.out
+
