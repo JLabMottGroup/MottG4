@@ -278,16 +278,9 @@ void MottPhysicsList::ConstructOp()
   theCerenkovProcess           = new G4Cerenkov("Cerenkov");
   theScintillationProcess      = new G4Scintillation("Scintillation");
   theAbsorptionProcess         = new G4OpAbsorption();
-  //theRayleighScatteringProcess = new G4OpRayleigh();
-  //theMieHGScatteringProcess    = new G4OpMieHG();
   theBoundaryProcess           = new G4OpBoundaryProcess();
 
-  //theCerenkovProcess->DumpPhysicsTable();
-  //theScintillationProcess->DumpPhysicsTable();
-  //theRayleighScatteringProcess->DumpPhysicsTable();
-
-  // SetVerbose(1);
-  
+  // Cerenkov Process
   theCerenkovProcess->SetMaxNumPhotonsPerStep(100);
   theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
   theCerenkovProcess->SetTrackSecondariesFirst(true);
@@ -295,10 +288,6 @@ void MottPhysicsList::ConstructOp()
   // Scintillation Process
   theScintillationProcess->SetScintillationYieldFactor(1.0); 		// Possibly multiply defined.
   theScintillationProcess->SetTrackSecondariesFirst(true);
-
-  // Use Birks Correction in the Scintillation process
-  //G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
-  //theScintillationProcess->AddSaturation(emSaturation);
 
   theParticleIterator->reset();
   while( (*theParticleIterator)() ){
@@ -315,10 +304,7 @@ void MottPhysicsList::ConstructOp()
       pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
     }
     if (particleName == "opticalphoton") {
-      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
       pmanager->AddDiscreteProcess(theAbsorptionProcess);
-    //  pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
-    //  pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
       pmanager->AddDiscreteProcess(theBoundaryProcess);
     }
   }

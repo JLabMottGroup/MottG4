@@ -30,6 +30,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "MottRunAction.hh"
+#include "MottRunActionMessenger.hh"
 #include "MottAnalysis.hh"
 
 #include "G4Run.hh"
@@ -43,17 +44,34 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 MottRunAction::MottRunAction()
-{}
+{
+  G4cout << "\tEntering MottRunAction::MottRunAction()" <<G4endl; 
+
+  //Default File names and locations.
+  rootFileName = "TestRun";
+  rootFileStem = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/";
+   
+  myMessenger = new MottRunActionMessenger(this);
+  
+  G4cout << "\tLeaving MottRunAction::MottRunAction()" <<G4endl; 
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 MottRunAction::~MottRunAction()
-{}
+{
+  G4cout << "\tEntering MottRunAction::~MottRunAction()" <<G4endl;
+  
+  if(myMessenger) delete myMessenger; 
+  
+  G4cout << "\tEntering MottRunAction::~MottRunAction()" <<G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void MottRunAction::BeginOfRunAction(const G4Run* aRun)
 {
+  G4cout << "\tEntering MottRunAction::BeginOfRunAction()" << G4endl;
 
   G4int runID = aRun->GetRunID();
   std::stringstream runNo;
@@ -71,7 +89,7 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   // Open an output ROOTfile
   // G4String fileName = "MottSim_" + runNo.str() + ".root";
   // For the farm
-  G4String fileName = "/volatile/hallc/qweak/mjmchugh/Jan_2014/MottSim_" + runNo.str() + ".root";
+  G4String fileName = rootFileStem + rootFileName +"_" + runNo.str() + ".root";
   analysisManager->OpenFile(fileName);
   analysisManager->SetFirstHistoId(1);
   
@@ -79,28 +97,28 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   analysisManager->CreateNtuple("Mott", "Edep and TrackL");
   
   // UP Detector (0-3)
-  analysisManager->CreateNtupleDColumn("up_e");
-  analysisManager->CreateNtupleDColumn("up_de");
-  analysisManager->CreateNtupleDColumn("up_e_dl");
-  analysisManager->CreateNtupleDColumn("up_de_dl");
+  analysisManager->CreateNtupleDColumn("Up_E");
+  analysisManager->CreateNtupleDColumn("Up_dE");
+  analysisManager->CreateNtupleDColumn("Up_E_dl");
+  analysisManager->CreateNtupleDColumn("Up_dE_dl");
   
   // DOWN Detector (4-7)
-  analysisManager->CreateNtupleDColumn("down_e");
-  analysisManager->CreateNtupleDColumn("down_de");
-  analysisManager->CreateNtupleDColumn("down_e_dl");
-  analysisManager->CreateNtupleDColumn("down_de_dl");
+  analysisManager->CreateNtupleDColumn("Down_E");
+  analysisManager->CreateNtupleDColumn("Down_dE");
+  analysisManager->CreateNtupleDColumn("Down_E_dl");
+  analysisManager->CreateNtupleDColumn("Down_dE_dl");
   
   // LEFT Detector (8-11)
-  analysisManager->CreateNtupleDColumn("left_e");
-  analysisManager->CreateNtupleDColumn("left_de");
-  analysisManager->CreateNtupleDColumn("left_e_dl");
-  analysisManager->CreateNtupleDColumn("left_de_dl");
+  analysisManager->CreateNtupleDColumn("Left_E");
+  analysisManager->CreateNtupleDColumn("Left_dE");
+  analysisManager->CreateNtupleDColumn("Left_E_dl");
+  analysisManager->CreateNtupleDColumn("Left_dE_dl");
   
   // RIGHT Detector (12-15)
-  analysisManager->CreateNtupleDColumn("right_e");
-  analysisManager->CreateNtupleDColumn("right_de");
-  analysisManager->CreateNtupleDColumn("right_e_dl");
-  analysisManager->CreateNtupleDColumn("right_de_dl");
+  analysisManager->CreateNtupleDColumn("Right_E");
+  analysisManager->CreateNtupleDColumn("Right_dE");
+  analysisManager->CreateNtupleDColumn("Right_E_dl");
+  analysisManager->CreateNtupleDColumn("Right_dE_dl");
   
   // "PMT" response.
   analysisManager->CreateNtupleIColumn("Up_E_PMT");	// 16
@@ -133,14 +151,20 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
     analysisManager->CreateNtupleDColumn(name);
   }
   
-  
   analysisManager->FinishNtuple();
+  
+  G4cout << "\tLeaving MottRunAction::BeginOfRunAction()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void MottRunAction::EndOfRunAction(const G4Run*)
+void MottRunAction::EndOfRunAction(const G4Run* aRun)
 {
+  G4cout << "\tEntering MottRunAction::EndOfRunAction()" << G4endl;
+
+  G4int runID = aRun->GetRunID();
+  G4cout << "### Run " << runID << "end." << G4endl;  
+
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
   // Write and Save ROOTfile.
@@ -149,9 +173,8 @@ void MottRunAction::EndOfRunAction(const G4Run*)
 
   // Complete cleanup
   delete G4AnalysisManager::Instance();
+  
+  G4cout << "\tLeaving MottRunAction::EndOfRunAction()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-

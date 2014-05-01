@@ -84,6 +84,8 @@ void MottTrackerSD::Initialize(G4HCofThisEvent* HCE)
 
 G4bool MottTrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 {
+  // std::cout << "\tEntering  MottTrackerSD::ProcessHits()" << std::endl;
+
   if( aStep->GetTrack()->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() ) {
     G4Material* Material = aStep->GetPostStepPoint()->GetMaterial();    
     if (Material->GetName() == "G4_Cs") {
@@ -111,14 +113,16 @@ G4bool MottTrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   //newHit->Print();
   //newHit->Draw();
 
-  return true;
+  // std::cout << "\tLeaving MottTrackerSD::ProcessHits()" << std::endl;
 
+  return true;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
+  // std::cout << "\tEntering MottTrackerSD::EndOfEvent()" << std::endl;
 
   G4int copy = 0;
   G4int NbHits = trackerCollection->entries();
@@ -205,7 +209,9 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
     }  
   }
   
-  SetPhotonCount(0);    
+  SetPhotonCount(0);
+  
+  // std::cout << "\tLeaving MottTrackerSD::EndOfEvent()" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

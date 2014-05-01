@@ -68,8 +68,10 @@ class MottEventAction : public G4UserEventAction
     G4double GetEtrackL(G4int i) { return EtrackL[i]; };
     G4double GetdEtrackL(G4int i) { return dEtrackL[i]; };
     G4int GetNumEPhotons(G4int i) { return NumEPhotons[i]; };    
-    G4int GetdNumEPhotons(G4int i) { return NumdEPhotons[i]; };    
-    
+    G4int GetNumdEPhotons(G4int i) { return NumdEPhotons[i]; };  
+    G4int GetNEPE(G4int i) { return NEPE[i]; };  
+    G4int GetndEPE(G4int i) { return NdEPE[i]; };
+
   private:
   
     // Main Detectors
@@ -79,7 +81,9 @@ class MottEventAction : public G4UserEventAction
     G4double dEtrackL[4];
     G4int NumEPhotons[4]; 
     G4int NumdEPhotons[4];
-     
+    G4int NEPE[4];
+    G4int NdEPE[4];     
+
     // Dump "Detectors"
     G4double BeEnergyDeposited[6*20];
     G4double CuEnergyDeposited[18*20];

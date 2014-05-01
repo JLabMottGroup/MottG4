@@ -83,6 +83,8 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
  
 void MottEventAction::EndOfEventAction(const G4Event* evt)
 {
+  // std::cout << "\tEntering MottEventAction::EndOfEventAction()" << std::endl;
+  
   G4int event_id = evt->GetEventID();
 
   // get number of stored trajectories
@@ -164,8 +166,11 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
       analysisManager->FillNtupleDColumn(145+i, CuEnergyDeposited[i]);
     }
         
-    analysisManager->AddNtupleRow();    
-  }        
+    analysisManager->AddNtupleRow();
+  }
+
+  // std::cout << "\tLeaving MottEventAction::EndOfEventAction()" << std::endl;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

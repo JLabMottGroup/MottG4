@@ -24,48 +24,65 @@
 // ********************************************************************
 //
 //
-// $Id: MottRunAction.hh,v 3.3 2013/03/13 22:58:38 mjmchugh Exp $
+// MottRunActionMessenger.cc
+// Created 2014-04-30
+// Martin McHugh
+// mjmchugh@jlab.org
 // 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottRunAction_h
-#define MottRunAction_h 1
+#include "MottRunAction.hh"
+#include "MottRunActionMessenger.hh"
 
-#include "G4UserRunAction.hh"
 #include "globals.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class G4Run;
-class MottRunActionMessenger;
+MottRunActionMessenger::MottRunActionMessenger(MottRunAction* runAction)
+:myRunAction(runAction)
+{ 
+  G4cout << "\tEntering MottRunActionMessenger::MottRunActionMessenger()" << G4endl;
 
-class MottRunAction : public G4UserRunAction
+  runActionDir = new G4UIdirectory("/RunAction/");
+  runActionDir->SetGuidance("Name output files and other run things");
+  
+  rootFileStemCmd = new G4UIcmdWithAString("/RunAction/RootFileStem",this);
+  rootFileStemCmd->SetGuidance("Set stem of file with output ROOT tree");
+  rootFileStemCmd->SetParameterName("RootFileStem",false);
+  rootFileStemCmd->SetDefaultValue("MottG4");
+  rootFileStemCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  
+  rootFileNameCmd = new G4UIcmdWithAString("/RunAction/RootFileName",this);
+  rootFileNameCmd->SetGuidance("Set Name of file with output ROOT tree");
+  rootFileNameCmd->SetParameterName("RootFileName",false);
+  rootFileNameCmd->SetDefaultValue("MottSim.root");
+  rootFileNameCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  
+  G4cout << "\tLeaving MottRunActionMessenger::MottRunActionMessenger()" << G4endl;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+MottRunActionMessenger::~MottRunActionMessenger()
 {
-  public:
-    MottRunAction();
-   ~MottRunAction();
-
-    void BeginOfRunAction(const G4Run*);
-    void EndOfRunAction(const G4Run*);
-    
-    void SetRootFileStem(G4String fileStem) { rootFileStem = fileStem; };
-    void SetRootFileName(G4String fileName) { rootFileName = fileName; };
-    
-  private: 
+  G4cout << "\tEntering MottRunActionMessenger::~MottRunActionMessenger()" << G4endl;
   
-    MottRunActionMessenger* myMessenger;
+  if(rootFileStemCmd) delete rootFileStemCmd;
+  if(rootFileNameCmd) delete rootFileNameCmd;
+  if(runActionDir) delete runActionDir;
   
-    G4String rootFileName;
-    G4String rootFileStem;
-    
-};
+  G4cout << "\tLeaving MottRunActionMessenger::~MottRunActionMessenger()" << G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+void MottRunActionMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
+{ 
+  if(command == rootFileStemCmd) myRunAction->SetRootFileStem(newValue);
+  if(command == rootFileNameCmd) myRunAction->SetRootFileName(newValue);
+}
 
-
-
-
-
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

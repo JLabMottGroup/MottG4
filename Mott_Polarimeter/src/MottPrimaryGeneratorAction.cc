@@ -85,6 +85,8 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+  // std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+
   // All Gun settings changed here will change every event. 
 
   // Source Position
@@ -101,6 +103,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   particleGun->SetParticleEnergy(energy);
   particleGun->SetParticlePosition(position);
   particleGun->GeneratePrimaryVertex(anEvent);
+  
+  // std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

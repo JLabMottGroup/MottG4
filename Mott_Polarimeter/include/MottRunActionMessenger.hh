@@ -24,32 +24,40 @@
 // ********************************************************************
 //
 //
-// $Id: MottSteppingAction.hh,v 3.2 2013/03/12 16:34:43 mjmchugh Exp $
-// 
+// MottRunActionMessenger.hh
+// Created 2014-04-30
+// Martin McHugh
+// mjmchugh@jlab.org
+//
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottSteppingAction_h
-#define MottSteppingAction_h 1
+#ifndef MottRunActionMessenger_h
+#define MottRunActionMessenger_h 1
 
-#include "G4Types.hh"
-#include "G4String.hh"
-#include "G4ThreeVector.hh"
-#include "G4TrackVector.hh"
-#include "G4SteppingManager.hh"
-#include "G4UserSteppingAction.hh"
+#include "globals.hh"
+#include "G4UImessenger.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+class MottRunAction;
+class G4UIdirectory;
+class G4UIcmdWithAString;
 
-class MottSteppingAction : public G4UserSteppingAction
-{
-  public:
-    MottSteppingAction();
-   ~MottSteppingAction(){};
+class MottRunActionMessenger : public G4UImessenger {
 
-    void UserSteppingAction(const G4Step*);
+  public: 
+    MottRunActionMessenger(MottRunAction*);
+   ~MottRunActionMessenger();
+   
+    void SetNewValue(G4UIcommand* command, G4String newValue);
+    
+  private:
+  
+    MottRunAction* myRunAction;
+    
+    G4UIdirectory* runActionDir; 
+    G4UIcmdWithAString* rootFileStemCmd;
+    G4UIcmdWithAString* rootFileNameCmd;
+    
 };
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

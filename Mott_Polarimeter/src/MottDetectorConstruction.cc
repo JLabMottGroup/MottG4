@@ -44,7 +44,7 @@
 #include "G4UnionSolid.hh"
 #include "G4SubtractionSolid.hh"
 
-#include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
 
 #include "G4LogicalVolume.hh"
@@ -104,6 +104,8 @@ MottDetectorConstruction::~MottDetectorConstruction()
  
 G4VPhysicalVolume* MottDetectorConstruction::Construct()
 {
+  std::cout << "\tEntering MottDetectorConstruction::Construct()" << std::endl;
+
 //--------- Material definition ---------
 
   G4String name, symbol;
@@ -594,50 +596,6 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   								    radialStep);
   new G4PVParameterised("physiCuDumpPlate", logicCuDumpSegment, logicCuDump, kZAxis, nLayersCu*nRings, CuDumpParam);
 
-
-  /*
-  G4Tubs* solidBeDump[nRings*nLayersBe];				// Array of rings for the dump
-  G4LogicalVolume* logicBeDump[nRings*nLayersBe];			// Logical volumes
-
-  for(G4int i=0; i<nLayersBe; i++) {
-    for(G4int j=0; j<nRings; j++) {
-     
-      G4String solidName = "solidBeDump";
-      G4String logicName = "logicBeDump";
-      G4String physiName = "physiBeDump";
-      std::ostringstream result;
-      result << nRings*i+j;
-      solidName += result.str();
-      logicName += result.str();
-      physiName += result.str();
-    
-      solidBeDump[nRings*i+j] = G4PVParameterised(
-	  			           j*radialStep,
-				           (j+1)*radialStep,
-				           HalfLayerDepth,
-				           0.0*deg,
-				           360.0*deg);
-      logicBeDump[nRings*i+j] = new G4LogicalVolume(solidBeDump[nRings*i+j], Be, logicName);
-
-      new G4PVPlacement(0,
-      			G4ThreeVector(0, 0, DumpFrontZpos + i*LayerDepth),
-      			logicBeDump[nRings*i+j],
-      			physiName,
-      			logicWorld,
-      			false,
-      			0);
-      
-      G4cout << G4endl << i 
-             << "\t" << j 
-             << "\t" << nRings*i+j 
-             << "\t" << (nRings*i+j)%nRings
-             << "\t" << ((nRings*i+j)-j)/nRings
-             << G4endl;
-      			
-    }
-  }
-  */
-  
 ///////////////////////////////////////////////////////////////////////////
 //////////////////////// DETECTOR PACKAGE(S) //////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -1051,7 +1009,6 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
 ///////////////////////// OPTICAL PROPERTIES /////////////////////////////
 //////////////////////////////////////////////////////////////////////////
   
-  /*
   // Spectrum for which I have data on the scintillators. 
   const G4int nentries = 14;
   G4double PhotonEnergy[nentries] = {2.48*eV, 	// 500 nm
@@ -1073,76 +1030,93 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   // EJ-200/EJ-212 (It's not really either).
   //----------------------------------
 
-  G4MaterialPropertiesTable* PlasticMPT = new G4MaterialPropertiesTable();
-  
   // Scintillation Optical properties
-  G4double ScintillationSpectrum[nentries] = {0.06, 0.11, 0.18, 0.30, 0.42, 0.51, 0.74, 0.92, 1.00, 0.86, 0.30, 0.02, 0.00, 0.00};
-  
-  PlasticMPT->AddProperty("FASTCOMPONENT", PhotonEnergy, ScintillationSpectrum, nentries);
+  G4double ScintillationSpectrum[nentries] = {0.06, 0.11, 0.18, 0.30, 0.42, 0.51, 
+					      0.74, 0.92, 1.00, 0.86, 0.30, 0.02, 
+					      0.00, 0.00};
+  // Cerenkov properties
+  G4double RefractiveIndex[nentries] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 
+					1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 
+					1.58, 1.58};
+  G4double AttenuationLength[nentries] = {250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 
+					  250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 
+					  250*cm, 250*cm, 250*cm, 250*cm};
+
+  G4MaterialPropertiesTable* PlasticMPT = new G4MaterialPropertiesTable();  
   PlasticMPT->AddConstProperty("SCINTILLATIONYIELD", 10000.0/MeV);
   PlasticMPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
   PlasticMPT->AddConstProperty("FASTTIMECONSTANT", 2.4*ns);
-  PlasticMPT->AddConstProperty("YIELDRATIO", 1.0);    
-      
-  // Cerenkov properties
-  
-  G4double RefractiveIndex[nentries] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
-  G4double AttenuationLength[nentries] = {250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm, 250*cm};
-  
+  PlasticMPT->AddConstProperty("YIELDRATIO", 1.0);
+  PlasticMPT->AddProperty("FASTCOMPONENT", PhotonEnergy, ScintillationSpectrum, nentries);
   PlasticMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nentries); 
   PlasticMPT->AddProperty("ABSLENGTH", PhotonEnergy, AttenuationLength, nentries);
-  
+
   Plastic->SetMaterialPropertiesTable(PlasticMPT);
-  
-  // Birk's Constant for PVT stuff. Should only affect slow e- or heavier particles. 
-  // Plastic->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
   
   //-------------------------------------
   // Air/Vacuum Optical properties (identical)
   //-------------------------------------
+
+  G4double AirRefractiveIndex[nentries] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+					   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+					   0.0, 0.0};
+  G4double AirAttenuationLength[nentries] = {1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,
+					     1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,
+					     1000*km,1000*km};
   
   G4MaterialPropertiesTable* AirMPT = new G4MaterialPropertiesTable();
-  
-  G4double AirRefractiveIndex[nentries] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  G4double AirAttenuationLength[nentries] = {1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km,1000*km};
-
   AirMPT->AddProperty("RINDEX", PhotonEnergy, AirRefractiveIndex, nentries);
   AirMPT->AddProperty("ABSLENGTH", PhotonEnergy, AirAttenuationLength, nentries);
-  
+
   Air->SetMaterialPropertiesTable(AirMPT);
   WorldMater->SetMaterialPropertiesTable(AirMPT);
-  */
-  
-//////////////////////////////////////////////////////////////////////////
-////////////////////////// OPTICAL SURFACES //////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-  
-  /*
-  G4OpticalSurface* PhotoPlate_OS = new G4OpticalSurface("PhotoPlate_OS");
 
-  PhotoPlate_OS->SetType(dielectric_metal);
-  PhotoPlate_OS->SetFinish(polished);
-  PhotoPlate_OS->SetModel(unified);
-  
-  // Optical Surface for the E detector -> Al plate.
-  G4double Reflectivity[nentries];
-  G4double Efficiency[nentries];
-    
-  for (int ii=0; ii<nentries; ii++) {
-    Reflectivity[ii] = 0.0;
-    Efficiency[ii] = 1.0;
-  }
-  
-  G4MaterialPropertiesTable *myST = new G4MaterialPropertiesTable();
-  myST->AddProperty("REFLECTIVITY", PhotonEnergy, Reflectivity, nentries);
-  myST->AddProperty("EFFICIENCY",   PhotonEnergy, Efficiency,   nentries);
-  PhotoPlate_OS->SetMaterialPropertiesTable(myST);
-  
-  G4LogicalBorderSurface* PMT_OS = new G4LogicalBorderSurface("PMT_OS",
-                             				      physiEDetLeft,
-                            				      physiPhotoPlate,       
-                            				      PhotoPlate_OS);
-  */
+  //-------------------------------------
+  // Photocathode MPT
+  //-------------------------------------
+
+  G4double PMTQuantumEfficiency[nentries] = {	0.103,  // 500 nm
+ 						0.105,  // 490 nm
+						0.107,	// 480 nm
+						0.108,
+						0.110,	
+						0.110,
+						0.111,
+						0.111,
+						0.112,  // 425 nm
+						0.112,
+						0.113,
+						0.113, 
+						0.113,  // 390 nm
+						0.112 };// 380 nm 
+
+  G4double PMTReflectivity[nentries] = { 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25,
+					 0.25 }; 
+
+  G4MaterialPropertiesTable* PhotocathodeMPT = new G4MaterialPropertiesTable();
+  PhotocathodeMPT->AddProperty("REFLECTIVITY", PhotonEnergy, PMTReflectivity,nentries);
+  PhotocathodeMPT->AddProperty("EFFICIENCY", PhotonEnergy, PMTQuantumEfficiency,nentries);
+
+  G4OpticalSurface* PhotocathodeOpticalSurface =  new G4OpticalSurface("PhotocathodeOS");
+  PhotocathodeOpticalSurface->SetType(dielectric_metal); 
+  PhotocathodeOpticalSurface->SetFinish(polished); 
+  PhotocathodeOpticalSurface->SetModel(glisur);
+  PhotocathodeOpticalSurface->SetMaterialPropertiesTable(PhotocathodeMPT);
+
+  G4LogicalSkinSurface* E_PMT_Surface = new G4LogicalSkinSurface("E_PMT_Surface",logicEPhotoPlate,PhotocathodeOpticalSurface);
+  G4LogicalSkinSurface* dE_PMT_Surface = new G4LogicalSkinSurface("dE_PMT_Surface",logicdEPhotoPlate,PhotocathodeOpticalSurface);
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////// VISUALIZATION ATTRIBUTES /////////////////////////
@@ -1278,6 +1252,8 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   stepLimit = new G4UserLimits(maxStep);
   logicWorld->SetUserLimits(stepLimit);
   
+  std::cout << "\tLeaving MottDetectorConstruction::Construct()" << std::endl;
+
   return physiWorld;
 }
 

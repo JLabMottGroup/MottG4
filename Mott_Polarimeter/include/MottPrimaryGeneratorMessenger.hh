@@ -39,7 +39,8 @@ class MottPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithADoubleAndUnit;
 
-class MottPrimaryGeneratorMessenger : public G4UImessenger {
+class MottPrimaryGeneratorMessenger : public G4UImessenger 
+{
 
   public: 
     MottPrimaryGeneratorMessenger(MottPrimaryGeneratorAction*);
