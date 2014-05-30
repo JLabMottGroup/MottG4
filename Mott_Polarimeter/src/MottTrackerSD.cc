@@ -86,14 +86,6 @@ G4bool MottTrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 {
   // std::cout << "\tEntering  MottTrackerSD::ProcessHits()" << std::endl;
 
-  if( aStep->GetTrack()->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() ) {
-    G4Material* Material = aStep->GetPostStepPoint()->GetMaterial();    
-    if (Material->GetName() == "G4_Cs") {
-      aStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      IncrementPhotonCount();
-    }   
-  }
-  
   G4double edep = aStep->GetTotalEnergyDeposit();
   G4double dl   = aStep->GetStepLength();
  
@@ -185,7 +177,7 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
   if ( trackerCollection->GetSDname() == "dE_4" ) { 
     pEventAction->SetdEdep(totalEdep, 3);
     pEventAction->SetdEtrackL(totalLength, 3);
-    pEventAction->SetNumdEPhotons(ngamma, 0);
+    pEventAction->SetNumdEPhotons(ngamma, 3);
   }
   if ( trackerCollection->GetSDname() == "E_4" ) { 
     pEventAction->SetEdep(totalEdep, 3);

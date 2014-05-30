@@ -45,6 +45,7 @@
 #include "G4SubtractionSolid.hh"
 
 #include "G4LogicalSkinSurface.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 
 #include "G4LogicalVolume.hh"
@@ -897,7 +898,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
                     
   // Left
   G4LogicalVolume* logicEDetLeft = new G4LogicalVolume(solidEDet, EDetMater, "logicEDetLeft");
-  new G4PVPlacement(RotateForLeft, positionEDetLeft, logicEDetLeft, "physiEDetLeft", logicWorld, false, 0);
+  G4VPhysicalVolume* physiEDetLeft = new G4PVPlacement(RotateForLeft, positionEDetLeft, logicEDetLeft, "physiEDetLeft", logicWorld, false, 0);
   
   // Right
   G4LogicalVolume* logicEDetRight = new G4LogicalVolume(solidEDet, EDetMater, "logicEDetRight");
@@ -923,7 +924,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4Tubs* solidEPhotoPlate = new G4Tubs("solidEPhotoPlate", 0.0*mm, EPhotoRadius, EPhotoLength, 0.0*deg, 360.0*deg);
   G4LogicalVolume* logicEPhotoPlate = new G4LogicalVolume(solidEPhotoPlate, PhotoCathodeMaterial, "logicEPhotoPlate");
 
-  new G4PVPlacement(RotateForLeft, positionEPhotoLeft, logicEPhotoPlate, "physiEPhotoLeft", logicWorld, false, 0);
+  G4VPhysicalVolume* physiEPhotoLeft = new G4PVPlacement(RotateForLeft, positionEPhotoLeft, logicEPhotoPlate, "physiEPhotoLeft", logicWorld, false, 0);
   new G4PVPlacement(RotateForRight, positionEPhotoRight, logicEPhotoPlate, "physiEPhotoRight", logicWorld, false, 0);
   new G4PVPlacement(RotateForUp, positionEPhotoUp, logicEPhotoPlate, "physiEPhotoUp", logicWorld, false, 0);
   new G4PVPlacement(RotateForDown, positionEPhotoDown, logicEPhotoPlate, "physiEPhotoDown", logicWorld, false, 0);
@@ -1074,7 +1075,8 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   //-------------------------------------
   // Photocathode MPT
   //-------------------------------------
-
+  
+  
   G4double PMTQuantumEfficiency[nentries] = {	0.103,  // 500 nm
  						0.105,  // 490 nm
 						0.107,	// 480 nm
@@ -1089,7 +1091,22 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
 						0.113, 
 						0.113,  // 390 nm
 						0.112 };// 380 nm 
-
+  /*
+  G4double PMTQuantumEfficiency[nentries] = {	1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00,
+  						1.00  };// 380 nm 
+  */
   G4double PMTReflectivity[nentries] = { 0.25,
 					 0.25,
 					 0.25,
@@ -1115,7 +1132,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   PhotocathodeOpticalSurface->SetModel(glisur);
   PhotocathodeOpticalSurface->SetMaterialPropertiesTable(PhotocathodeMPT);
 
-  G4LogicalSkinSurface* E_PMT_Surface = new G4LogicalSkinSurface("E_PMT_Surface",logicEPhotoPlate,PhotocathodeOpticalSurface);
+  G4LogicalBorderSurface* E_PMT_Surface = new G4LogicalBorderSurface("E_PMT_Surface",physiEDetLeft,physiEPhotoLeft,PhotocathodeOpticalSurface);
   G4LogicalSkinSurface* dE_PMT_Surface = new G4LogicalSkinSurface("dE_PMT_Surface",logicdEPhotoPlate,PhotocathodeOpticalSurface);
 
 //////////////////////////////////////////////////////////////////////////

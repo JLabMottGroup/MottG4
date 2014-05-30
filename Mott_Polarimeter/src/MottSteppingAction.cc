@@ -30,8 +30,9 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "MottSteppingAction.hh"
-#include "G4SteppingManager.hh"
+#include "MottTrackerSD.hh"
 
+#include "G4SteppingManager.hh"
 #include "G4TrackVector.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4Gamma.hh"
@@ -43,6 +44,8 @@
 #include "G4SDManager.hh"
 #include "G4UnitsTable.hh"
 
+#include "Randomize.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 MottSteppingAction::MottSteppingAction()
@@ -52,24 +55,26 @@ MottSteppingAction::MottSteppingAction()
 
 void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
 {
-  // std::cout << "\tEntering MottSteppingAction::UserSteppingAction()" << std::endl;
+  // G4cout << "\tEntering MottSteppingAction::UserSteppingAction()" << G4endl;
   
-  /*
   // ** all the track info is postStep **
   G4Track*              theTrack     = theStep->GetTrack();
+  
+  if(!theTrack->GetNextVolume()) return;	// Stop us from segfaulting when OutOfWorld
+  
   G4ParticleDefinition* particleType = theTrack->GetDefinition();
   G4StepPoint*          thePrePoint  = theStep->GetPreStepPoint();
   G4VPhysicalVolume*    thePrePV     = thePrePoint->GetPhysicalVolume();
   G4StepPoint*          thePostPoint = theStep->GetPostStepPoint();
-  G4VPhysicalVolume*    thePostPV    = thePostPoint->GetPhysicalVolume(); 
+  G4VPhysicalVolume*    thePostPV    = thePostPoint->GetPhysicalVolume();
   G4TouchableHistory*   theTouchable = (G4TouchableHistory*)(thePrePoint->GetTouchable());
   G4int                 ReplicaNo    = thePostPV->GetCopyNo();
   G4String              particleName = theTrack->GetDefinition()->GetParticleName();
   G4ProcessManager*     pm           = particleType->GetProcessManager();
-
+  
   G4OpBoundaryProcessStatus boundaryStatus=Undefined;
-  static G4OpBoundaryProcess* boundary=NULL;
-
+  G4OpBoundaryProcess* boundary=NULL;
+  
   if(!boundary){
     G4int nprocesses = pm->GetProcessListLength();
     G4ProcessVector* pv = pm->GetProcessList();
@@ -80,47 +85,47 @@ void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
       }
     }
   }
-
+  
   if(particleType==G4OpticalPhoton::OpticalPhotonDefinition()){
     boundaryStatus=boundary->GetStatus(); 
-    if(thePostPoint->GetStepStatus()==fGeomBoundary){
-      switch(boundaryStatus){
-      case Absorption:
-        {
-          std::cout<<"Absorption"<<std::endl;
+    if(thePostPoint->GetStepStatus()==fGeomBoundary) {
+      switch(boundaryStatus) {
+        case Absorption: {
+          // G4cout<<"Absorption"<<G4endl;
           break;
-        }
-      case Detection:
-        {
-          std::cout<<"Detected a photon."<<std::endl;
+        } case Detection: {
+          G4double random = G4UniformRand();
+          G4SDManager* SDMan = G4SDManager::GetSDMpointer();
+          //G4cout << "Detected a photon in "<< thePostPV->GetName() << G4endl;
+          if (thePostPV->GetName() == "physiEPhotoLeft") {				// E Left
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/E_3");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
+          if (thePostPV->GetName() == "physidEPhotoLeft") {				// dE Left
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/dE_3");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
           break; 
-        }
-      case FresnelReflection:
-        {
-          std::cout<<"FresnelReflection"<<std::endl;
+        } case FresnelReflection: {
+          // G4cout<<"FresnelReflection"<<G4endl;
+          break;
+        } case TotalInternalReflection: {
+          //G4cout<<"TotalInternalReflection"<<G4endl;
+          break;
+        } case SpikeReflection: {
+          //G4cout<<"SpikeReflection"<<G4endl;
+          break;
+        } default: {
+          //G4cout<<"Undefined"<<G4endl;
           break;
         }
-      case TotalInternalReflection:
-        {
-          std::cout<<"TotalInternalReflection"<<std::endl;
-          break;
-        }
-      case SpikeReflection:
-        {
-          std::cout<<"SpikeReflection"<<std::endl;
-          break;
-        }
-      default:
-        {
-          std::cout<<"Undefined"<<std::endl;
-          break;
-        }
-      }
-    }
-  }  // end of optical photon process
+      } // end switch(boundaryStatus)
+    } // end (if fGeomBoundary)
+  } // end of optical photon process
 
-  */
-  // std::cout << "\tLeaving MottSteppingAction::UserSteppingAction()" << std::endl;
+  // G4cout << "\tLeaving MottSteppingAction::UserSteppingAction()" << G4endl;
   
 }
 
