@@ -1,0 +1,6 @@
+# For Marty's laptop
+
+/RunAction/RootFileStem /home/mjmchugh/Mott/MottG4/output/
+/RunAction/RootFileName myRun
+/run/run/beamOn 10000
+

@@ -11,7 +11,7 @@ cd /u/home/mjmchugh/MottG4/Mott_Polarimeter
 build/mott macros/myRun.mac
   ]]></Command>
 
-  <Memory space="1200" unit="MB"/>
+  <Memory space="2000" unit="MB"/>
   <TimeLimit unit="minutes" time="4320"/>
 
 
