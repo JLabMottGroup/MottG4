@@ -49,7 +49,6 @@ class MottRunAction : public G4UserRunAction
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
     
-    void SetRootFileStem(G4String fileStem) { rootFileStem = fileStem; };
     void SetRootFileName(G4String fileName) { rootFileName = fileName; };
     
   private: 
@@ -57,7 +56,6 @@ class MottRunAction : public G4UserRunAction
     MottRunActionMessenger* myMessenger;
   
     G4String rootFileName;
-    G4String rootFileStem;
     
 };
 

@@ -46,16 +46,10 @@ MottRunActionMessenger::MottRunActionMessenger(MottRunAction* runAction)
 { 
   G4cout << "\tEntering MottRunActionMessenger::MottRunActionMessenger()" << G4endl;
 
-  runActionDir = new G4UIdirectory("/RunAction/");
+  runActionDir = new G4UIdirectory("/Analysis/");
   runActionDir->SetGuidance("Name output files and other run things");
   
-  rootFileStemCmd = new G4UIcmdWithAString("/RunAction/RootFileStem",this);
-  rootFileStemCmd->SetGuidance("Set stem of file with output ROOT tree");
-  rootFileStemCmd->SetParameterName("RootFileStem",false);
-  rootFileStemCmd->SetDefaultValue("MottG4");
-  rootFileStemCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-  
-  rootFileNameCmd = new G4UIcmdWithAString("/RunAction/RootFileName",this);
+  rootFileNameCmd = new G4UIcmdWithAString("/Analysis/RootFileName",this);
   rootFileNameCmd->SetGuidance("Set Name of file with output ROOT tree");
   rootFileNameCmd->SetParameterName("RootFileName",false);
   rootFileNameCmd->SetDefaultValue("MottSim.root");
@@ -70,7 +64,6 @@ MottRunActionMessenger::~MottRunActionMessenger()
 {
   G4cout << "\tEntering MottRunActionMessenger::~MottRunActionMessenger()" << G4endl;
   
-  if(rootFileStemCmd) delete rootFileStemCmd;
   if(rootFileNameCmd) delete rootFileNameCmd;
   if(runActionDir) delete runActionDir;
   
@@ -81,7 +74,6 @@ MottRunActionMessenger::~MottRunActionMessenger()
 
 void MottRunActionMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 { 
-  if(command == rootFileStemCmd) myRunAction->SetRootFileStem(newValue);
   if(command == rootFileNameCmd) myRunAction->SetRootFileName(newValue);
 }
 

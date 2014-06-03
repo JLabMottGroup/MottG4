@@ -48,8 +48,7 @@ MottRunAction::MottRunAction()
   G4cout << "\tEntering MottRunAction::MottRunAction()" <<G4endl; 
 
   //Default File names and locations.
-  rootFileName = "TestRun";
-  rootFileStem = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/";
+  rootFileName = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/MottSim.root";
    
   myMessenger = new MottRunActionMessenger(this);
   
@@ -89,7 +88,7 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   // Open an output ROOTfile
   // G4String fileName = "MottSim_" + runNo.str() + ".root";
   // For the farm
-  G4String fileName = rootFileStem + rootFileName +"_" + runNo.str() + ".root";
+  G4String fileName = rootFileName;
   analysisManager->OpenFile(fileName);
   analysisManager->SetFirstHistoId(1);
   

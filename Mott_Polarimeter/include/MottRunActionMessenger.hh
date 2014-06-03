@@ -55,7 +55,6 @@ class MottRunActionMessenger : public G4UImessenger {
     MottRunAction* myRunAction;
     
     G4UIdirectory* runActionDir; 
-    G4UIcmdWithAString* rootFileStemCmd;
     G4UIcmdWithAString* rootFileNameCmd;
     
 };
