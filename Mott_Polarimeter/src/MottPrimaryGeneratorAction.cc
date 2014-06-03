@@ -103,7 +103,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   } else {
     G4double ScatteringAngle = 172.7*deg;			// Average acceptance angle.
     G4double Theta = ScatteringAngle - 1.0*deg + 2.0*G4UniformRand()*deg;
-    G4double Phi = 10.0*G4UniformRand()*deg - 5.0*deg;  
+    G4double Phi = 10.0*G4UniformRand()*deg + 85.0*deg;  
     G4ThreeVector direction;
                   direction.setRThetaPhi(1.0,Theta,Phi);   
     particleGun->SetParticleMomentumDirection(direction);
