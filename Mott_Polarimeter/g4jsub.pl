@@ -4,17 +4,20 @@ use warnings;
 
 use Getopt::Long;
 use Data::Dumper;
+use Cwd;
+use File::Spec;
 
 ###############################################################################
 ##Quick program to submit a series of simulations to 
 ##Auger. Please see the help menu by running --help.
 ##
-##Author: Josh Magee, magee@jlab.org
+##Author: Martin McHugh, mjmchugh@jlab.org
 ##June 7, 2013.
 ###############################################################################
 
 #declaration of global variables, arrays, and hashes
-my $user = "mjmchugh";
+my $user = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+my $MottGeantDir = Cwd::realpath(File::Spec->updir);
 my $original_mac;
 my $jobname;
 my $mac_content;
@@ -23,24 +26,35 @@ my $Njobs;
 
 #declaration of subroutines
 sub helpscreen;
-sub print_footer;   #prints macfile header
+sub print_header;   #prints macfile header
+sub print_footer;   #prints macfile footer
 sub print_xml;      #prints xml file
 
-my ($help);
+my ($help,$dryrun,$rootdir,$outdir);
 GetOptions(
  "help|h|?"           =>  \$help,
  "Nevents|events=i"   =>  \$Nevents,
  "Njobs|jobs=i"       =>  \$Njobs,
+ "dry-run|dry|test"   =>  \$dryrun,
+ "root-dir|r=s"	      =>  \$rootdir,
+ "out|o=s"	      =>  \$outdir
 );
 
 #die helpscreen unless $#ARGV!=0;
 die helpscreen if $help;
+#create necessary directories unless exists
+mkdir "xml" unless (-e "xml");
+mkdir "macros" unless (-e "macros");
+mkdir "jsub" unless (-e "jsub");
+mkdir "jsub/output" unless (-e "jsub/output");
 
-$Njobs  = 10   unless  $Njobs;
-$Nevents=10000 unless $Nevents;
+$Njobs   = 10		unless $Njobs;
+$Nevents = 10000	unless $Nevents;
 $original_mac = pop @ARGV;
 
 #construct basename
+#basename is the name of the original macfile given
+#with a number appended, 1<n<Njobs
 if ($original_mac =~ m/(.*)\.mac/) {
     $jobname = $1;
 } else {
@@ -48,7 +62,8 @@ if ($original_mac =~ m/(.*)\.mac/) {
     $original_mac = $original_mac . "\.mac";
 }
 
-open ORIG, "<", $original_mac or die "cant open your .mac file: $!\n";
+#open and read-in provided mac file
+open ORIG, "<", ("macros/$original_mac" or $original_mac) or die "cant open your .mac file: $!\n";
 {
   local $/;               #restrict slurp to local block
   $mac_content = <ORIG>;  #SLUUUUUURP
@@ -57,22 +72,27 @@ close ORIG;
 
 foreach my $number (1..$Njobs) {
   my $basename = "$jobname\_$number";
-  my $output = "macros\/$basename\.mac";
-  my $xmlout = "xml\/$basename.xml";
+  my $output = "macros/jobs/$basename.mac";
+  my $xmlout = "xml/$basename.xml";
 
-  #create individual mapfile
+  #create individual macfile
   open my $fh, ">", $output or die "can't open/create $output: $!\n";
+  print_header($fh,$basename);  #print new title
   print $fh $mac_content;
-  print_footer($fh,$basename,$Nevents);
+  print_footer($fh,$basename,$Nevents); #print random seed information, output
   close $fh;
 
-  #deal with xml file
+  #create xml file
   open my $xml, ">", $xmlout or die "can't open/create $xmlout: $!\n";
   print_xml($xml,$basename);
   close $xml;
 
-  my $callAuger = "jsub -xml $xmlout";
-  system $callAuger;
+  if ($dryrun) {
+    print "This is just a test: jsub -xml $xmlout\n";
+  } else {
+    my $callAuger = "jsub -xml $xmlout";  #this is command to run jobs
+    system $callAuger;
+  }
 } #end foreach over files
 
 print "End of job submissions.\n";
@@ -90,49 +110,75 @@ my $helpstring = <<EOF;
 Program designed to submit multiple jobs to the Auger batchfarm.
 Provide this script with a map file, the number of events to
 generate, and the number of files to generate, and it will do
-the rest.
+the rest. Please only execute this file in the current directory.
+Macros may be located in either the current directory or the macros/
+sub-directory.
 
 Calling syntax:
-  g4jsub.pl [options]
+  perl g4jsub.pl [options]
 Example:
-  g4sub.pl sample.mac --events 20000 --jobs 5
+  perl g4sub.pl sample.mac --events 20000 --jobs 5 -r "/work/username/directory" 
 
 Options include:
   --help       displays this helpful message
   --events     set number of events in each job
-              default is 10k
+                default is 10k
   --jobs       number of jobs to submit
---              default is 10
-NOTE: you MUST make an xml/ and macros/ folder before using.
+                default is 10
+  --root-dir   provide a ROOTfile location
+                default is /volatile/hallc/qweak/USERNAME
+  --out-dir    location for .err and .out files to go
+                default is /user/path/QwGeant4/jsub/output
+  --dry-run    do a dry run: create all the files
+                but don't submit any.
+                Useful for testing.
 EOF
 die $helpstring if $help;
+}
+
+sub print_header {
+  my ($fh,$basename) = @_;
+
+  my $header =
+"
+#==============================#
+# Macro file $basename         #
+# generated from g4jsub script #
+#==============================#
+";
+print $fh "$header\n";
 }
 
 sub print_footer {
   my ($fh,$basename,$Nevents) = @_;
 
-  my $seed1 = int ( rand(1e10) );
-  my $seed2 = int ( rand(1e9 ) );
+  my $rootfile = "/volatile/hallc/qweak/$user/Mott/$basename\.root";
 
-  my $header =
+  if ( $rootdir ) {
+    $rootfile = "$rootdir/$basename.root";
+  }
+
+  my $footer =
   "
-#======================#
-# Macro file $basename #
-#======================#
-
 # load/execute this macro
-/random/setSeeds $seed1 $seed2
+/Analysis/RootFileName $rootfile
 /run/beamOn $Nevents
-
-exit
 ";
 
-print $fh "$header\n";
+print $fh "$footer\n";
 return;
 }
 
 sub print_xml {
   my ($xml,$basename) = @_;
+
+  my $outfile = "$MottGeantDir/output/$basename.out";
+  my $errfile = "$MottGeantDir/output/$basename.err";
+
+  if( $outdir ) {
+    $outfile = "$outdir/$basename.out";
+    $errfile = "$outdir/$basename.err";
+  }
 
 my $xmlfile =
 "
@@ -144,17 +190,15 @@ my $xmlfile =
   <OS name=\"centos62\"/>
   <Command><![CDATA[
 source /home/$user/.login
-cd /u/home/$user/MottG4/Mott_Polarimeter
-build/mott macros/$basename\.mac
+cd $MottGeantDir/Mott_Polarimeter
+build/mott macros/jobs/$basename\.mac
   ]]></Command>
 
-  <Memory space=\"1200\" unit=\"MB\"/>
-  <TimeLimit unit=\"minutes\" time=\"4320\"/>
-
+  <Memory space=\"2000\" unit=\"MB\"/>
 
   <Job>
-    <Stdout dest=\"/u/home/$user/MottG4/output/$basename\.out\"/>
-    <Stderr dest=\"/u/home/$user/MottG4/output/$basename\.err\"/>
+    <Stdout dest=\"$outfile\"/>
+    <Stderr dest=\"$errfile\"/>
   </Job>
 
 </Request>
@@ -162,4 +206,3 @@ build/mott macros/$basename\.mac
 print $xml "$xmlfile\n";
 return;
 } #end print_xml
-

@@ -40,7 +40,7 @@ target_link_libraries(mott ${Geant4_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(N02_SCRIPTS
-    Mott.in  Mott.large_N.in  Mott.out run1.mac run2.mac vis.mac
+    vis.mac
   )
 
 foreach(_script ${N02_SCRIPTS})
