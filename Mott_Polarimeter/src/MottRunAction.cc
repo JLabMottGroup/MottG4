@@ -132,7 +132,7 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   // Event #
   analysisManager->CreateNtupleIColumn("Event_ID");     // 24  
   
-  // Dump segments.
+  /* Dump Plate segments.
   G4int nBeSegments = 20*6;
   G4int nCuSegments = 20*18;
   for(G4int i=0; i<nBeSegments; i++) {
@@ -149,6 +149,7 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
     name += number.str();
     analysisManager->CreateNtupleDColumn(name);
   }
+  */
   
   analysisManager->FinishNtuple();
   

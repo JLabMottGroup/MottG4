@@ -55,13 +55,14 @@ class MottEventAction : public G4UserEventAction
     inline void SetNumEPhotons(G4int nhits, G4int i) { NumEPhotons[i] = nhits; };
     inline void SetNumdEPhotons(G4int nhits, G4int i) { NumdEPhotons[i] = nhits; };
     
-    // Dump
+    /* Dump Plate
     inline void SetBeEnergyDeposited(G4double edep, G4int i) { BeEnergyDeposited[i] = edep; };
     inline void AddBeEnergyDeposited(G4double edep, G4int i) { BeEnergyDeposited[i] += edep; };
     G4double GetBeEnergyDeposited(G4int i) { return BeEnergyDeposited[i]; };
     inline void SetCuEnergyDeposited(G4double edep, G4int i) { CuEnergyDeposited[i] = edep; };
     inline void AddCuEnergyDeposited(G4double edep, G4int i) { CuEnergyDeposited[i] += edep; };
     G4double GetCuEnergyDeposited(G4int i) { return CuEnergyDeposited[i]; };
+    */
     
     G4double GetEdep(G4int i) { return Edep[i]; };
     G4double GetdEdep(G4int i) { return dEdep[i]; };
@@ -85,8 +86,8 @@ class MottEventAction : public G4UserEventAction
     G4int NdEPE[4];     
 
     // Dump "Detectors"
-    G4double BeEnergyDeposited[6*20];
-    G4double CuEnergyDeposited[18*20];
+    //G4double BeEnergyDeposited[6*20];
+    //G4double CuEnergyDeposited[18*20];
      
 };
 

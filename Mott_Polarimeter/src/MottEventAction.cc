@@ -69,6 +69,7 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
     NumdEPhotons[i] = 0; 
   }
   
+  /*
   for(G4int i=0; i<6*20; i++) {
     BeEnergyDeposited[i] = 0;
   }
@@ -76,7 +77,7 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
   for(G4int i=0; i<18*20; i++) {
     CuEnergyDeposited[i] = 0;
   }
-  
+  */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,10 +112,11 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     if(dEdep[i]!=0) HasBeenHit++;
   }
 
-  // Check Dump for a hit
+  /* Check Dump for a hit
   for(G4int i=0; i<6*20; i++) {
     if(BeEnergyDeposited[i]!=0) HasBeenHit++;
   }
+  */
 
   // Fill ntuples
   if (HasBeenHit>0) {
@@ -156,7 +158,7 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     // Event_ID    
     analysisManager->FillNtupleIColumn(24, event_id);
     
-    // Be Dump Plate
+    /* Be Dump Plate
     for(G4int i=0; i<6*20; i++) {
       analysisManager->FillNtupleDColumn(25+i, BeEnergyDeposited[i]);
     }
@@ -165,7 +167,8 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     for(G4int i=0; i<18*20; i++) {
       analysisManager->FillNtupleDColumn(145+i, CuEnergyDeposited[i]);
     }
-        
+    */
+      
     analysisManager->AddNtupleRow();
   }
 

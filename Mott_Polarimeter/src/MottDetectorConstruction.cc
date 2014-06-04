@@ -1244,7 +1244,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   SDman->AddNewDetector( E_4_SD );
   logicEDetRight->SetSensitiveDetector( E_4_SD );
   
-  // Dump Plate(s)
+  /* Dump Plate(s)
   // Beryllium
   G4String BeDumpSDName = "Mott/BeDump";
   MottTrackerSD* BeDumpSD = new MottTrackerSD(BeDumpSDName);
@@ -1256,6 +1256,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   MottTrackerSD* CuDumpSD = new MottTrackerSD(CuDumpSDName);
   SDman->AddNewDetector(CuDumpSD);
   logicCuDumpSegment->SetSensitiveDetector(CuDumpSD);
+  */
   
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////// USER LIMITS(S) /////////////////////////////////
