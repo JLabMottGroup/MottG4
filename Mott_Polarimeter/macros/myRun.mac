@@ -1,2 +1,3 @@
-/random/setSavingFlag 1
+#This is a test macro.
 
+/Beam/SetEnergySpread 25 keV

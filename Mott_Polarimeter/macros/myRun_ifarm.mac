@@ -1,6 +1,0 @@
-# For the farm machines
-
-/RunAction/RootFileStem /volatile/hallc/qweak/mjmchugh/Mott/
-/RunAction/RootFileName myRun
-/run/run/beamOn 10000
-
