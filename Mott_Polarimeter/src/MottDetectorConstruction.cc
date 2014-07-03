@@ -255,7 +255,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4double EPhotoRadius = 1.5*inch;
   
   // Scattering angle
-  G4double ScatteringAngle = 172.7*deg;
+  G4double ScatteringAngle = 172.6*deg;
   
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////////// World Def //////////////////////////////////
