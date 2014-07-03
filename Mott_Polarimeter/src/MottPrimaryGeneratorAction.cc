@@ -41,6 +41,8 @@
 #include "G4SystemOfUnits.hh"
 
 #include "Randomize.hh"
+#include <iostream>
+#include <cmath>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -48,6 +50,8 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
                                                MottDetectorConstruction* myDC)
 :myDetector(myDC)
 {
+  G4cout << "\tEntering MottPrimaryGeneratorAction::MottPrimaryGeneratorAction()" <<G4endl; 
+
   G4int n_particle = 1;
 
   myMessenger = new MottPrimaryGeneratorMessenger(this);
@@ -62,16 +66,26 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   // Set default particle to electron
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* particle = particleTable->FindParticle("e-");
-
-  // Anything set in this member function 
-  // should not be set elsewhere and will 
-  // remain constant through a run.
-  
-  G4ThreeVector direction = G4ThreeVector(0,0,1.0);     // no dispersion
-  
-  // Set the constant gun properties
   particleGun->SetParticleDefinition(particle);
-  particleGun->SetParticleMomentumDirection(direction);
+  
+  //Read in Xavi's data.
+  std::ifstream inFile;
+  inFile.open("/home/mjmchugh/Mott/MottG4/CrossSections/Mott-DWBA-Au-5MeV.out");
+  
+  G4double theta, i, t, u, s;
+  for(G4int nLines=1; nLines<=427; nLines++) {
+    inFile >> theta >> i >> t >> u >> s;
+    ThetaSc.push_back(theta);
+    CrossSection.push_back(i);
+    SpinT.push_back(t);
+    SpinU.push_back(u);
+    Sherman.push_back(s);
+    //G4cout << "\t" << nLines << "\t" << theta << "\t" << i << "\t" << t << "\t" << u << "\t" << s << G4endl;
+  }
+  
+  inFile.close();
+  
+  G4cout << "\tLeaving MottPrimaryGeneratorAction::MottPrimaryGeneratorAction()" <<G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -94,6 +108,14 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   G4ThreeVector gunPosition = G4ThreeVector(0,0,0);
   
+  // Incident electron's polarization set here
+  G4double Sx = 0.0;
+  G4double Sy = 0.0;
+  G4double Sz = 1.0;
+  G4ThreeVector preScatteredPolarization = G4ThreeVector(Sx,Sy,Sz);
+
+  G4double Phi = 0; 
+  G4double Theta = 0;
   if(ThrowFromUpstream) {
     G4double sigma = beamDiameter/(2.354820045*mm);
     G4double X = G4RandGauss::shoot(0.0,sigma)*mm;
@@ -101,12 +123,29 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double Z = -10.0*cm;
     gunPosition = G4ThreeVector(X, Y, Z);
   } else {
-    G4double ScatteringAngle = 172.7*deg;			// Average acceptance angle.
-    G4double Theta = ScatteringAngle - 1.0*deg + 2.0*G4UniformRand()*deg;
-    G4double Phi = 10.0*G4UniformRand()*deg - 5.0*deg;  
+    G4int goodThrow = 0;
+    while (goodThrow==0) { 
+      G4double ScatteringAngle = 172.6*deg;					// Average acceptance angle.
+      Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	// Throw from 172.0 to 173.2 degrees
+      G4double quadrantRoll = G4UniformRand();					// Pick a quadrant							
+      if(0.0<=quadrantRoll&&quadrantRoll<0.25) {				// Throw a 5 degree window in phi around each aperature
+        Phi = 5.0*G4UniformRand()*deg - 2.5*deg;        
+      } else if(0.25<=quadrantRoll&&quadrantRoll<0.5) {
+        Phi = 5.0*G4UniformRand()*deg + 87.5*deg;
+      } else if(0.5<=quadrantRoll&&quadrantRoll<0.75) {
+        Phi = 5.0*G4UniformRand()*deg + 177.5*deg;
+      } else if(0.75<=quadrantRoll&&quadrantRoll<=1.0) {
+        Phi = 5.0*G4UniformRand()*deg + 267.5*deg;
+      }
+      G4double cs = InterpolateCrossSection(Theta/deg)*(1 + InterpolateSherman(Theta/deg)*cos(Phi));
+      G4double rejectionThrow = 8.4602e-26*G4UniformRand();
+      if(rejectionThrow<=cs) goodThrow = 1; 
+    }
+      
     G4ThreeVector direction;
                   direction.setRThetaPhi(1.0,Theta,Phi);   
     particleGun->SetParticleMomentumDirection(direction);
+    //G4cout << "\t" << Theta/deg << "\t" << Phi/deg << G4endl;
   }
   
   // Beam Energy 
@@ -124,6 +163,86 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+G4double MottPrimaryGeneratorAction::InterpolateCrossSection(G4double x) {
+
+  G4double y = -1;
+
+  if(x<3.7||179.5<x) {
+    G4cout << "Angle outside of range " << x << G4endl;
+    return y;
+  }
   
+  G4int i=0;
+  while(ThetaSc[i]<x) i++;
+  G4double x1 = ThetaSc[i];	G4double y1 = CrossSection[i];
+  G4double x0 = ThetaSc[i-1];	G4double y0 = CrossSection[i-1];
+  
+  y = y0 + (y1-y0)*(x-x0)/(x1-x0);
+
+  return y;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4double MottPrimaryGeneratorAction::InterpolateSherman(G4double x) {
+
+  G4double y = -1;
+
+  if(x<3.7||179.5<x) {
+    G4cout << "Angle outside of range " << x << G4endl;
+    return y;
+  }
+  
+  G4int i=0;
+  while(ThetaSc[i]<x) i++;
+
+  G4double x1 = ThetaSc[i];	G4double y1 = Sherman[i];
+  G4double x0 = ThetaSc[i-1];	G4double y0 = Sherman[i-1];
+  
+  y = y0 + (y1-y0)*(x-x0)/(x1-x0);
+
+  return y;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4double MottPrimaryGeneratorAction::InterpolateT(G4double x) {
+
+  G4double y = -1;
+
+  if(x<3.7||179.5<x) {
+    G4cout << "Angle outside of range " << x << G4endl;
+    return y;
+  }
+  
+  G4int i=0;
+  while(ThetaSc[i]<x) i++;
+
+  G4double x1 = ThetaSc[i];	G4double y1 = SpinT[i];
+  G4double x0 = ThetaSc[i-1];	G4double y0 = SpinT[i-1];
+  
+  y = y0 + (y1-y0)*(x-x0)/(x1-x0);
+
+  return y;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4double MottPrimaryGeneratorAction::InterpolateU(G4double x) {
+
+  G4double y = -1;
+
+  if(x<3.7||179.5<x) {
+    G4cout << "Angle outside of range " << x << G4endl;
+    return y;
+  }
+  
+  G4int i=0;
+  while(ThetaSc[i]<x) i++;
+
+  G4double x1 = ThetaSc[i];	G4double y1 = SpinU[i];
+  G4double x0 = ThetaSc[i-1];	G4double y0 = SpinU[i-1];
+  
+  y = y0 + (y1-y0)*(x-x0)/(x1-x0);
+
+  return y;
+}  
 
 

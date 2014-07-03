@@ -255,7 +255,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4double EPhotoRadius = 1.5*inch;
   
   // Scattering angle
-  G4double ScatteringAngle = 172.7*deg;
+  G4double ScatteringAngle = 172.6*deg;
   
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////////// World Def //////////////////////////////////
@@ -740,12 +740,9 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   // Make the thing all ready
   G4LogicalVolume* logicPbCap = new G4LogicalVolume(solidPbCap, Pb, "logicPbCap");
   new G4PVPlacement(RotateForUp, positionPbCapUp, logicPbCap, "physiPbCapUp", logicWorld, false, 0);
-  new G4PVPlacement(RotateForDown, positionPbCapDown, logicPbCap,
-  		    "physiPbCapDown", logicWorld, false, 0);
-  new G4PVPlacement(RotateForLeft, positionPbCapLeft, logicPbCap,
-  		    "physiPbCapDown", logicWorld, false, 0);
-  new G4PVPlacement(RotateForRight, positionPbCapRight, logicPbCap,
-  		    "physiPbCapRight", logicWorld, false, 0);  		      		    
+  new G4PVPlacement(RotateForDown, positionPbCapDown, logicPbCap, "physiPbCapDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positionPbCapLeft, logicPbCap, "physiPbCapDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForRight, positionPbCapRight, logicPbCap, "physiPbCapRight", logicWorld, false, 0);  		      		    
   
   //------------------------------------------------
   // Detector Housing. 
@@ -898,7 +895,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
                     
   // Left
   G4LogicalVolume* logicEDetLeft = new G4LogicalVolume(solidEDet, EDetMater, "logicEDetLeft");
-  G4VPhysicalVolume* physiEDetLeft = new G4PVPlacement(RotateForLeft, positionEDetLeft, logicEDetLeft, "physiEDetLeft", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positionEDetLeft, logicEDetLeft, "physiEDetLeft", logicWorld, false, 0);
   
   // Right
   G4LogicalVolume* logicEDetRight = new G4LogicalVolume(solidEDet, EDetMater, "logicEDetRight");
@@ -912,22 +909,22 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   
   G4double EPhotoZpos = EDetZpos + EDetLength + EPhotoLength;
   
-  G4ThreeVector positionEPhotoLeft = G4ThreeVector(0,0,EPhotoZpos);
-                positionEPhotoLeft.rotateY(ScatteringAngle);
-  G4ThreeVector positionEPhotoRight = G4ThreeVector(0,0,EPhotoZpos);
-                positionEPhotoRight.rotateY(-ScatteringAngle);
   G4ThreeVector positionEPhotoUp = G4ThreeVector(0,0,EPhotoZpos);
                 positionEPhotoUp.rotateX(-ScatteringAngle);
   G4ThreeVector positionEPhotoDown = G4ThreeVector(0,0,EPhotoZpos);
                 positionEPhotoDown.rotateX(ScatteringAngle);
+  G4ThreeVector positionEPhotoLeft = G4ThreeVector(0,0,EPhotoZpos);
+                positionEPhotoLeft.rotateY(ScatteringAngle);
+  G4ThreeVector positionEPhotoRight = G4ThreeVector(0,0,EPhotoZpos);
+                positionEPhotoRight.rotateY(-ScatteringAngle);
                 
   G4Tubs* solidEPhotoPlate = new G4Tubs("solidEPhotoPlate", 0.0*mm, EPhotoRadius, EPhotoLength, 0.0*deg, 360.0*deg);
   G4LogicalVolume* logicEPhotoPlate = new G4LogicalVolume(solidEPhotoPlate, PhotoCathodeMaterial, "logicEPhotoPlate");
 
-  G4VPhysicalVolume* physiEPhotoLeft = new G4PVPlacement(RotateForLeft, positionEPhotoLeft, logicEPhotoPlate, "physiEPhotoLeft", logicWorld, false, 0);
-  new G4PVPlacement(RotateForRight, positionEPhotoRight, logicEPhotoPlate, "physiEPhotoRight", logicWorld, false, 0);
   new G4PVPlacement(RotateForUp, positionEPhotoUp, logicEPhotoPlate, "physiEPhotoUp", logicWorld, false, 0);
   new G4PVPlacement(RotateForDown, positionEPhotoDown, logicEPhotoPlate, "physiEPhotoDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positionEPhotoLeft, logicEPhotoPlate, "physiEPhotoLeft", logicWorld, false, 0);
+  new G4PVPlacement(RotateForRight, positionEPhotoRight, logicEPhotoPlate, "physiEPhotoRight", logicWorld, false, 0);
   
   //------------------------------------------------		    
   //  dE "Photocathode"
@@ -939,22 +936,22 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4double dEPhotoZpos = DeltaEZpos;
   G4double dEPhotoYpos = dEPhotoLength + DeltaEwidth; 
   
-  G4ThreeVector positiondEPhotoLeft = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
-                positiondEPhotoLeft.rotateY(ScatteringAngle);
-  G4ThreeVector positiondEPhotoRight = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
-                positiondEPhotoRight.rotateY(-ScatteringAngle);
   G4ThreeVector positiondEPhotoUp = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
                 positiondEPhotoUp.rotateX(-ScatteringAngle);
   G4ThreeVector positiondEPhotoDown = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
                 positiondEPhotoDown.rotateX(ScatteringAngle);
+  G4ThreeVector positiondEPhotoLeft = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
+                positiondEPhotoLeft.rotateY(ScatteringAngle);
+  G4ThreeVector positiondEPhotoRight = G4ThreeVector(0,dEPhotoYpos,dEPhotoZpos);
+                positiondEPhotoRight.rotateY(-ScatteringAngle);
                 
   G4Box* solidDeltaEPhotoPlate = new G4Box("solidDeltaEPhotoPlate", dEPhotoWidth, dEPhotoLength, dEPhotoLength);
   G4LogicalVolume* logicdEPhotoPlate = new G4LogicalVolume(solidDeltaEPhotoPlate, PhotoCathodeMaterial, "logicDeltaEPhotoPlate");  
   
-  new G4PVPlacement(RotateForLeft, positiondEPhotoLeft, logicdEPhotoPlate, "physidEPhotoLeft", logicWorld, false, 0);
-  new G4PVPlacement(RotateForRight, positiondEPhotoRight, logicdEPhotoPlate, "physidEPhotoRight", logicWorld, false, 0);
   new G4PVPlacement(RotateForUp, positiondEPhotoUp, logicdEPhotoPlate, "physidEPhotoUp", logicWorld, false, 0);
   new G4PVPlacement(RotateForDown, positiondEPhotoDown, logicdEPhotoPlate, "physidEPhotoDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positiondEPhotoLeft, logicdEPhotoPlate, "physidEPhotoLeft", logicWorld, false, 0);
+  new G4PVPlacement(RotateForRight, positiondEPhotoRight, logicdEPhotoPlate, "physidEPhotoRight", logicWorld, false, 0);
   
   //------------------------------------------------		    
   // Air Column
@@ -963,22 +960,22 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4double AirLength = 0.5*fAirLength;
   G4double AirZpos = DeltaEZpos - (AirLength+DeltaElength);
   
-  G4ThreeVector positionAirLeft = G4ThreeVector(0,0,AirZpos);
-                positionAirLeft.rotateY(ScatteringAngle);
-  G4ThreeVector positionAirRight = G4ThreeVector(0,0,AirZpos);
-                positionAirRight.rotateY(-ScatteringAngle);
   G4ThreeVector positionAirUp = G4ThreeVector(0,0,AirZpos);
                 positionAirUp.rotateX(-ScatteringAngle);
   G4ThreeVector positionAirDown = G4ThreeVector(0,0,AirZpos);
                 positionAirDown.rotateX(ScatteringAngle);
+  G4ThreeVector positionAirLeft = G4ThreeVector(0,0,AirZpos);
+                positionAirLeft.rotateY(ScatteringAngle);
+  G4ThreeVector positionAirRight = G4ThreeVector(0,0,AirZpos);
+                positionAirRight.rotateY(-ScatteringAngle);
   
   G4Tubs* solidAir = new G4Tubs("solidAir", 0.0*mm, AirRadius, AirLength, 0.0*deg, 360.0*deg);  				
   G4LogicalVolume* logicAirColumn = new G4LogicalVolume(solidAir, Air, "logicAirColumn");
   
-  new G4PVPlacement(RotateForLeft, positionAirLeft, logicAirColumn, "physiAirColumnLeft", logicWorld, false, 0);
-  new G4PVPlacement(RotateForRight, positionAirRight, logicAirColumn, "physiAirColumnRight", logicWorld, false, 0);
   new G4PVPlacement(RotateForUp, positionAirUp, logicAirColumn, "physiAirColumnUp", logicWorld, false, 0);
   new G4PVPlacement(RotateForDown, positionAirDown, logicAirColumn, "physiAirColumnDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positionAirLeft, logicAirColumn, "physiAirColumnLeft", logicWorld, false, 0);
+  new G4PVPlacement(RotateForRight, positionAirRight, logicAirColumn, "physiAirColumnRight", logicWorld, false, 0);
   
   //------------------------------------------------		    
   // Aluminium Window
@@ -988,23 +985,23 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4double AlWindowRadius = 1.0*inch;
   G4double AlWindowZPos = AirZpos - (AirLength+AlWindowLength);
   
-  G4ThreeVector positionAlWindowLeft = G4ThreeVector(0,0,AlWindowZPos);
-                positionAlWindowLeft.rotateY(ScatteringAngle);
-  G4ThreeVector positionAlWindowRight = G4ThreeVector(0,0,AlWindowZPos);
-                positionAlWindowRight.rotateY(-ScatteringAngle);
   G4ThreeVector positionAlWindowUp = G4ThreeVector(0,0,AlWindowZPos);
                 positionAlWindowUp.rotateX(-ScatteringAngle);
   G4ThreeVector positionAlWindowDown = G4ThreeVector(0,0,AlWindowZPos);
                 positionAlWindowDown.rotateX(ScatteringAngle);
+  G4ThreeVector positionAlWindowLeft = G4ThreeVector(0,0,AlWindowZPos);
+                positionAlWindowLeft.rotateY(ScatteringAngle);
+  G4ThreeVector positionAlWindowRight = G4ThreeVector(0,0,AlWindowZPos);
+                positionAlWindowRight.rotateY(-ScatteringAngle);
   
   
   G4Tubs* solidAlWindow = new G4Tubs("solidAlWindow", 0.0*mm, AlWindowRadius, AlWindowLength, 0.0*deg, 360.0*deg);
   G4LogicalVolume* logicAlWindow = new G4LogicalVolume(solidAlWindow, Al, "logicAlWindow");
 
-  new G4PVPlacement(RotateForLeft, positionAlWindowLeft, logicAlWindow, "physiAlWindowLeft", logicWorld, false, 0);
-  new G4PVPlacement(RotateForRight, positionAlWindowRight, logicAlWindow, "physiAlWindowRight", logicWorld, false, 0);
   new G4PVPlacement(RotateForUp, positionAlWindowUp, logicAlWindow, "physiAlWindowUp", logicWorld, false, 0);
   new G4PVPlacement(RotateForDown, positionAlWindowDown, logicAlWindow, "physiAlWindowDown", logicWorld, false, 0);
+  new G4PVPlacement(RotateForLeft, positionAlWindowLeft, logicAlWindow, "physiAlWindowLeft", logicWorld, false, 0);
+  new G4PVPlacement(RotateForRight, positionAlWindowRight, logicAlWindow, "physiAlWindowRight", logicWorld, false, 0);
   
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////// OPTICAL PROPERTIES /////////////////////////////
@@ -1132,8 +1129,8 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   PhotocathodeOpticalSurface->SetModel(glisur);
   PhotocathodeOpticalSurface->SetMaterialPropertiesTable(PhotocathodeMPT);
 
-  G4LogicalBorderSurface* E_PMT_Surface = new G4LogicalBorderSurface("E_PMT_Surface",physiEDetLeft,physiEPhotoLeft,PhotocathodeOpticalSurface);
-  G4LogicalSkinSurface* dE_PMT_Surface = new G4LogicalSkinSurface("dE_PMT_Surface",logicdEPhotoPlate,PhotocathodeOpticalSurface);
+  new G4LogicalSkinSurface("E_PMT_Surface",logicEPhotoPlate,PhotocathodeOpticalSurface);
+  new G4LogicalSkinSurface("dE_PMT_Surface",logicdEPhotoPlate,PhotocathodeOpticalSurface);
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////// VISUALIZATION ATTRIBUTES /////////////////////////
@@ -1247,7 +1244,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   SDman->AddNewDetector( E_4_SD );
   logicEDetRight->SetSensitiveDetector( E_4_SD );
   
-  // Dump Plate(s)
+  /* Dump Plate(s)
   // Beryllium
   G4String BeDumpSDName = "Mott/BeDump";
   MottTrackerSD* BeDumpSD = new MottTrackerSD(BeDumpSDName);
@@ -1259,6 +1256,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   MottTrackerSD* CuDumpSD = new MottTrackerSD(CuDumpSDName);
   SDman->AddNewDetector(CuDumpSD);
   logicCuDumpSegment->SetSensitiveDetector(CuDumpSD);
+  */
   
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////// USER LIMITS(S) /////////////////////////////////

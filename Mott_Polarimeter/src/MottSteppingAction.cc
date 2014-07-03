@@ -63,12 +63,8 @@ void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
   if(!theTrack->GetNextVolume()) return;	// Stop us from segfaulting when OutOfWorld
   
   G4ParticleDefinition* particleType = theTrack->GetDefinition();
-  G4StepPoint*          thePrePoint  = theStep->GetPreStepPoint();
-  G4VPhysicalVolume*    thePrePV     = thePrePoint->GetPhysicalVolume();
   G4StepPoint*          thePostPoint = theStep->GetPostStepPoint();
   G4VPhysicalVolume*    thePostPV    = thePostPoint->GetPhysicalVolume();
-  G4TouchableHistory*   theTouchable = (G4TouchableHistory*)(thePrePoint->GetTouchable());
-  G4int                 ReplicaNo    = thePostPV->GetCopyNo();
   G4String              particleName = theTrack->GetDefinition()->GetParticleName();
   G4ProcessManager*     pm           = particleType->GetProcessManager();
   
@@ -94,9 +90,28 @@ void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
           // G4cout<<"Absorption"<<G4endl;
           break;
         } case Detection: {
-          G4double random = G4UniformRand();
           G4SDManager* SDMan = G4SDManager::GetSDMpointer();
           //G4cout << "Detected a photon in "<< thePostPV->GetName() << G4endl;
+          if (thePostPV->GetName() == "physiEPhotoUp") {				// E Up
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/E_1");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
+          if (thePostPV->GetName() == "physidEPhotoUp") {				// dE Up
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/dE_1");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
+          if (thePostPV->GetName() == "physiEPhotoDown") {				// E Down
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/E_2");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
+          if (thePostPV->GetName() == "physidEPhotoDown") {				// dE Down
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/dE_2");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }          
           if (thePostPV->GetName() == "physiEPhotoLeft") {				// E Left
             MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/E_3");
             mottSD->IncrementPhotonCount();
@@ -107,6 +122,16 @@ void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
             mottSD->IncrementPhotonCount();
             theTrack->SetTrackStatus(fStopAndKill);
           }
+          if (thePostPV->GetName() == "physiEPhotoRight") {				// E Right
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/E_4");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }
+          if (thePostPV->GetName() == "physidEPhotoRight") {				// dE Right
+            MottTrackerSD* mottSD = (MottTrackerSD*)SDMan->FindSensitiveDetector("/Mott/dE_4");
+            mottSD->IncrementPhotonCount();
+            theTrack->SetTrackStatus(fStopAndKill);
+          }          
           break; 
         } case FresnelReflection: {
           // G4cout<<"FresnelReflection"<<G4endl;

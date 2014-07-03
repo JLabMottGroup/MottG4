@@ -185,6 +185,7 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
     pEventAction->SetNumEPhotons(ngamma, 3);
   } 
   
+  /* Dump Plate
   if ( trackerCollection->GetSDname() == "BeDump" ) {
     for (G4int i=0; i<NbHits; i++) {
       copy = (*trackerCollection)[i]->GetCopyNo();
@@ -200,6 +201,7 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
       pEventAction->AddCuEnergyDeposited(edep, copy);
     }  
   }
+  */
   
   SetPhotonCount(0);
   
