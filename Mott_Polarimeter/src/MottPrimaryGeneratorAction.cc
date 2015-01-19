@@ -145,7 +145,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4ThreeVector direction;
                   direction.setRThetaPhi(1.0,Theta,Phi);   
     particleGun->SetParticleMomentumDirection(direction);
-    //G4cout << "\t" << Theta/deg << "\t" << Phi/deg << G4endl;
+    G4cout << "\t" << Theta/deg << "\t" << Phi/deg << G4endl;
   }
   
   // Beam Energy 
