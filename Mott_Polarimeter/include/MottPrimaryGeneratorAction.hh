@@ -60,11 +60,13 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetBeamDiameter(G4double diameter) { beamDiameter = diameter; };
     G4double GetBeamDiameter() { return beamDiameter; };
 
+    void ReadDataFiles();
+
     //Linear interpolation functions for arrays.
-    G4double InterpolateCrossSection(G4double);					
-    G4double InterpolateSherman(G4double);
-    G4double InterpolateT(G4double);
-    G4double InterpolateU(G4double);
+    G4double InterpolateCrossSection(G4double,G4double);					
+    G4double InterpolateSherman(G4double,G4double);
+    G4double InterpolateT(G4double,G4double);
+    G4double InterpolateU(G4double,G4double);
     
   private:
   
@@ -78,11 +80,11 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double energySpread;	// Std. Dev.
     G4double beamDiameter;  	// FWHM 
     
-    std::vector <G4double> ThetaSc;
-    std::vector <G4double> CrossSection;
-    std::vector <G4double> SpinT;
-    std::vector <G4double> SpinU;
-    std::vector <G4double> Sherman;
+    std::vector < std::vector <G4double> > ThetaSc;
+    std::vector < std::vector <G4double> > CrossSection;
+    std::vector < std::vector <G4double> > SpinT;
+    std::vector < std::vector <G4double> > SpinU;
+    std::vector < std::vector <G4double> > Sherman;
     
 };
 

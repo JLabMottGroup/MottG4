@@ -57,6 +57,7 @@ class MottDetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* Construct();
      
      G4double GetTargetFullLength()  {return fTargetLength;};
+     G4double GetTargetZPosition()   {return TargetZpos;};
      G4double GetWorldFullLength()   {return fWorldLength;}; 
      
      void SetTargetLength(G4double);
