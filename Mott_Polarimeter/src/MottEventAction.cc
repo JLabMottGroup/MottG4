@@ -48,7 +48,13 @@ MottEventAction::MottEventAction()
    EtrackL(),
    dEtrackL(),
    NumEPhotons(),
-   NumdEPhotons()
+   NumdEPhotons(),
+   KEPrime(),
+   XPos(),
+   YPos(),
+   ZPos(),
+   Theta(),
+   Phi()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -60,6 +66,8 @@ MottEventAction::~MottEventAction()
  
 void MottEventAction::BeginOfEventAction(const G4Event*)
 {
+  std::cout << "\tEntering MottEventAction::BeginOfEventAction()" << std::endl;
+  
   for(G4int i=0; i<4; i++) {
     Edep[i] = 0.0;
     dEdep[i] = 0.0;
@@ -69,6 +77,13 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
     NumdEPhotons[i] = 0; 
   }
   
+  KEPrime = 0;
+  XPos = 0;
+  YPos = 0;
+  ZPos = 0;
+  Theta = 0;
+  Phi = 0;
+
   /*
   for(G4int i=0; i<6*20; i++) {
     BeEnergyDeposited[i] = 0;
@@ -78,13 +93,16 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
     CuEnergyDeposited[i] = 0;
   }
   */
+
+  std::cout << "\tLeaving MottEventAction::BeginOfEventAction()" << std::endl;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
 void MottEventAction::EndOfEventAction(const G4Event* evt)
 {
-  // std::cout << "\tEntering MottEventAction::EndOfEventAction()" << std::endl;
+  std::cout << "\tEntering MottEventAction::EndOfEventAction()" << std::endl;
   
   G4int event_id = evt->GetEventID();
 
@@ -158,6 +176,9 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     // Event_ID    
     analysisManager->FillNtupleIColumn(24, event_id);
     
+    // Vertex Info
+    analysisManager->FillNtupleDColumn(25, KEPrime);
+
     /* Be Dump Plate
     for(G4int i=0; i<6*20; i++) {
       analysisManager->FillNtupleDColumn(25+i, BeEnergyDeposited[i]);
@@ -172,7 +193,7 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     analysisManager->AddNtupleRow();
   }
 
-  // std::cout << "\tLeaving MottEventAction::EndOfEventAction()" << std::endl;
+  std::cout << "\tLeaving MottEventAction::EndOfEventAction()" << std::endl;
 
 }
 

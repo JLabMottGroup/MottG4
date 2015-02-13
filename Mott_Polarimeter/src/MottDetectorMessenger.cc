@@ -36,6 +36,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWithAString.hh"
 #include "globals.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -59,6 +60,13 @@ MottDetectorMessenger::MottDetectorMessenger(MottDetectorConstruction* myDet)
   TargetOutCmd = new G4UIcmdWithoutParameter("/Target/TargetOut", this);
   TargetOutCmd->SetGuidance("Removes the target from the scattering chamber");
   TargetOutCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  TargetMaterCmd = new G4UIcmdWithAString("/Target/SetTargetMaterial", this);
+  TargetMaterCmd->SetGuidance("Enter the chemical symbol of the target foil");
+  TargetMaterCmd->SetParameterName("Symbol",1);
+  TargetMaterCmd->SetCandidates("Au Ag");
+  TargetMaterCmd->SetDefaultValue("Au");
+  TargetMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
   
   SteppingDir = new G4UIdirectory("/Stepping/");
   SteppingDir->SetGuidance("Stepping Action settings for the world");      
@@ -80,6 +88,7 @@ MottDetectorMessenger::~MottDetectorMessenger()
   delete StepMaxCmd;  
   delete SteppingDir;
   delete TargetDir;
+  delete TargetMaterCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -96,7 +105,10 @@ void MottDetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
    { myDetector->SetTargetIn(); }
    
   if( command == TargetOutCmd ) 
-   { myDetector->SetTargetOut(); } 
+   { myDetector->SetTargetOut(); }
+
+  if( command == TargetMaterCmd )
+   { myDetector->SetTargetMater(newValue); }
    
 }
 

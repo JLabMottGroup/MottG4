@@ -38,6 +38,7 @@
 
 class MottPrimaryGeneratorMessenger;
 class MottDetectorConstruction;
+class MottEventAction;
 class G4ParticleGun;
 class G4Event;
 
@@ -51,7 +52,7 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     void GeneratePrimaries(G4Event*);
 
-    void SetBeamEnergy(G4double energy) { beamEnergy = energy; };
+    void SetBeamEnergy(G4double);
     G4double GetBeamEnergy() { return beamEnergy; };
     
     void SetEnergySpread(G4double spread) { energySpread = spread; };
@@ -72,9 +73,12 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   
     G4ParticleGun* particleGun;
     MottDetectorConstruction* myDetector;
-    
     MottPrimaryGeneratorMessenger* myMessenger;
+    MottEventAction* pEventAction;
     
+    // Target Properties
+    G4double TargetZ;
+
     // Beam Properties
     G4double beamEnergy;
     G4double energySpread;	// Std. Dev.

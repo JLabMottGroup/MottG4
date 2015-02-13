@@ -32,7 +32,10 @@
 #include "MottPrimaryGeneratorAction.hh"
 #include "MottDetectorConstruction.hh"
 #include "MottPrimaryGeneratorMessenger.hh"
+#include "MottEventAction.hh"
 
+#include "G4Material.hh"
+#include "G4RunManager.hh"
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
@@ -56,7 +59,10 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
 
   myMessenger = new MottPrimaryGeneratorMessenger(this);
   particleGun = new G4ParticleGun(n_particle);
+  pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
+  TargetZ = 79;
+
   // Set default 
   beamEnergy = 5.0*MeV;
   energySpread = 5e-03*MeV;
@@ -90,7 +96,7 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  // std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 
   // All Gun settings changed here will change every event. 
   // Random aspects must be input before calling GeneratePrimaryVertex();
@@ -120,7 +126,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   G4double Phi = 0; 
   G4double Theta = 0;
-  G4double MaxThrow = 8.0e-26;
+  G4double MaxThrow = 1.6*CrossSection[0][589];					// 1.6 times the lowest energy dcs at 172 deg.
   if(ThrowFromUpstream) {
     Z = -10.0*cm;
     gunPosition = G4ThreeVector(X, Y, Z);
@@ -128,7 +134,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4int goodThrow = 0;
     while (goodThrow==0) { 
       G4double ScatteringAngle = 172.6*deg;					// Average acceptance angle.
-      Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	// Throw from 172.0 to 173.2 degrees
+      Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	        // Throw from 172.0 to 173.2 degrees
       G4double quadrantRoll = G4UniformRand();					// Pick a quadrant							
       if(0.0<=quadrantRoll&&quadrantRoll<0.25) {				// Throw a 5 degree window in phi around each aperature
         Phi = 5.0*G4UniformRand()*deg - 2.5*deg;        
@@ -141,27 +147,35 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
       G4double cs = InterpolateCrossSection(Theta/deg,energy/MeV);
       G4double s = InterpolateSherman(Theta/deg,energy/MeV);
-      //G4double t = InterpolateT(Theta/deg,energy/MeV);
-      //G4double u = InterpolateU(Theta/deg,energy/MeV);
+      G4double t = InterpolateT(Theta/deg,energy/MeV);
+      G4double u = InterpolateU(Theta/deg,energy/MeV);
       cs = cs*(1 + s*cos(Phi));
       G4double rejectionThrow = MaxThrow*G4UniformRand();
       if(rejectionThrow<=cs) {
       	goodThrow = 1;  
-      	//G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
+      	G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
       }
     }
       
     gunDirection.setRThetaPhi(1.0,Theta,Phi);   
-    //G4cout << energy/MeV << "\t" << Theta/deg << "\t" << Phi/deg << "\t" << X/mm << "\t" << Y/mm << "\t" << Z/mm << G4endl;
   }
- 
+  
+  pEventAction->SetKEPrime(energy);
+  pEventAction->SetXPos(X);
+  pEventAction->SetYPos(Y);
+  pEventAction->SetZPos(Z);
+  pEventAction->SetTheta(Theta);
+  pEventAction->SetPhi(Phi);
+
+  
+
   // Set variable gun properties
   particleGun->SetParticleEnergy(energy);
   particleGun->SetParticlePosition(gunPosition);
   particleGun->SetParticleMomentumDirection(gunDirection); 
   particleGun->GeneratePrimaryVertex(anEvent);
   
-  // std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -179,10 +193,17 @@ void MottPrimaryGeneratorAction::ReadDataFiles() {
     Sherman[i].clear();
   }
   
+  char* MOTTG4DIR = getenv("MOTTG4DIR");
+
   //Read in Xavi's data.
   std::ifstream dcsFile;				// Cross section files
   std::ifstream spfFile;				// Spin transfer functions
-  
+
+  if(myDetector->GetTargetMater()!=NULL) {
+    G4cout << "Target info "  << myDetector->GetTargetMater()->GetName() << " " << myDetector->GetTargetMater()->GetZ() << G4endl;
+    TargetZ = myDetector->GetTargetMater()->GetZ();
+  }  
+
   for(G4int i=0; i<5; i++) {  
   
     G4String skipLine;
@@ -197,9 +218,9 @@ void MottPrimaryGeneratorAction::ReadDataFiles() {
       energyDecimal += 1000;
     }
     
-    char dcsFileName[250], spfFileName[250]; 
-    sprintf(dcsFileName,"/home/mjmchugh/Mott/MottG4/NewMottPhysics/Z=79_E=%4.2fMeV/dcs_%1dp%03de06.dat", fileEnergy, energyInt, energyDecimal);
-    sprintf(spfFileName,"/home/mjmchugh/Mott/MottG4/NewMottPhysics/Z=79_E=%4.2fMeV/spf.dat", fileEnergy);
+    char dcsFileName[250], spfFileName[250];
+    sprintf(dcsFileName,"%s/NewMottPhysics/Z=%2.0f_E=%4.2fMeV/dcs_%1dp%03de06.dat", MOTTG4DIR, TargetZ, fileEnergy, energyInt, energyDecimal);
+    sprintf(spfFileName,"%s/NewMottPhysics/Z=%2.0f_E=%4.2fMeV/spf.dat", MOTTG4DIR, TargetZ, fileEnergy);
 
     dcsFile.open(dcsFileName);
     for(G4int nLines=1; nLines<27; nLines++) {
@@ -233,7 +254,6 @@ void MottPrimaryGeneratorAction::ReadDataFiles() {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4double MottPrimaryGeneratorAction::InterpolateCrossSection(G4double theta, G4double energy) {
 
   G4double F_xy = -1;
@@ -427,4 +447,19 @@ G4double MottPrimaryGeneratorAction::InterpolateU(G4double theta, G4double energ
   
   return F_xy;
 }    
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void MottPrimaryGeneratorAction::SetBeamEnergy(G4double energy) {
+
+  G4double E = energy/MeV;
+
+  if ( !(E==3.0||E==5.0||E==6.0||E==8.0) ) {
+    G4cout << "Please enter one of the four acceptable kinetic energies." << G4endl;
+    return;
+  }
+
+  beamEnergy = energy;
+
+  ReadDataFiles();
+}
 

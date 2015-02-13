@@ -1,3 +1,5 @@
 #This is a test macro.
 
 /Beam/SetEnergySpread 25 keV
+
+/run/beamOn 100

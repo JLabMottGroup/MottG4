@@ -33,6 +33,7 @@
 #define MottDetectorConstruction_h 1
 
 #include "globals.hh"
+#include "G4String.hh"
 #include "G4VUserDetectorConstruction.hh"
 
 class G4Box;
@@ -55,16 +56,18 @@ class MottDetectorConstruction : public G4VUserDetectorConstruction
   public:
   
      G4VPhysicalVolume* Construct();
-     
-     G4double GetTargetFullLength()  {return fTargetLength;};
-     G4double GetTargetZPosition()   {return TargetZpos;};
-     G4double GetWorldFullLength()   {return fWorldLength;}; 
-     
-     void SetTargetLength(G4double);
+
+     void SetTargetLength(G4double newLength)	{ fTargetLength = newLength; };
+     G4double GetTargetFullLength()  		{return fTargetLength;};
+     G4double GetTargetZPosition()   		{return TargetZpos;};
+     G4double GetWorldFullLength()   		{return fWorldLength;}; 
+     G4Material* GetTargetMater()		{return TargetMater;};     
+
+     void SetTargetMater(G4String);
      void SetTargetIn();
      void SetTargetOut();
-     
-     void SetMaxStep (G4double);     
+
+     void SetMaxStep (G4double);
      
   private:
 

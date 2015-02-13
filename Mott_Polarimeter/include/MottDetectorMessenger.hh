@@ -40,6 +40,7 @@ class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
+class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -59,6 +60,7 @@ class MottDetectorMessenger: public G4UImessenger
     G4UIcmdWithoutParameter*	TargetInCmd;
     G4UIcmdWithoutParameter*	TargetOutCmd;
     G4UIcmdWithADoubleAndUnit*  TargetLengthCmd;
+    G4UIcmdWithAString*		TargetMaterCmd;
     
     // Mott Stepping stuff
     G4UIdirectory*              SteppingDir;

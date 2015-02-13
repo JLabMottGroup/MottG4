@@ -1273,14 +1273,22 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
- 
-void MottDetectorConstruction::SetTargetLength(G4double newTargetThickness)
-{
-  fTargetLength = newTargetThickness;
-}
- 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void MottDetectorConstruction::SetTargetMater(G4String newMater) {
 
+  G4double a, z, density;
+
+  G4Material* Au = new G4Material("Gold", z=79, a=196.97*g/mole, density=19.32*g/cm3);
+  G4Material* Ag = new G4Material("Silver", z=47, a=107.8682*g/mole, density=10.49*g/cm3);
+
+  if(newMater=="Au") {
+    TargetMater = Au;
+  } else if(newMater=="Ag") {
+    TargetMater = Ag;
+  }
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void MottDetectorConstruction::SetTargetIn()
 {
   G4cout << " ##### Calling MottDetectorConstruction::SetTargetIn() ##### " << G4endl;
@@ -1295,7 +1303,6 @@ void MottDetectorConstruction::SetTargetIn()
 }
  
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void MottDetectorConstruction::SetTargetOut()
 {
   G4cout << " ##### Calling MottDetectorConstruction::SetTargetOut() ##### " << G4endl;

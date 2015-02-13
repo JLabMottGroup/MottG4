@@ -48,7 +48,7 @@ MottRunAction::MottRunAction()
   G4cout << "\tEntering MottRunAction::MottRunAction()" <<G4endl; 
 
   //Default File names and locations.
-  rootFileName = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/MottSim.root";
+  rootFileName = "/home/mjmchugh/MottG4/Mott_Polarimeter/MottSim.root";
    
   myMessenger = new MottRunActionMessenger(this);
   
@@ -132,6 +132,15 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   // Event #
   analysisManager->CreateNtupleIColumn("Event_ID");     // 24  
   
+  // Primary Vertex Info
+  analysisManager->CreateNtupleDColumn("PrimaryVertexKEprime");	// 25
+  analysisManager->CreateNtupleDColumn("PrimaryVertexX");	// 26
+  analysisManager->CreateNtupleDColumn("PrimaryVertexY");	// 27
+  analysisManager->CreateNtupleDColumn("PrimaryVertexZ");	// 28
+  analysisManager->CreateNtupleDColumn("PrimaryVertexTheta");	// 29
+  analysisManager->CreateNtupleDColumn("PrimaryVertexPhi");	// 30
+    
+
   /* Dump Plate segments.
   G4int nBeSegments = 20*6;
   G4int nCuSegments = 20*18;

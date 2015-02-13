@@ -73,6 +73,20 @@ class MottEventAction : public G4UserEventAction
     G4int GetNEPE(G4int i) { return NEPE[i]; };  
     G4int GetndEPE(G4int i) { return NdEPE[i]; };
 
+    // Primary Vertex Set()/Get()
+    inline void SetKEPrime(G4double KE) { KEPrime = KE; };
+    G4double GetKEPrime() { return KEPrime; };
+    inline void SetXPos(G4double X) { XPos = X; };
+    G4double GetXPos() { return XPos; };
+    inline void SetYPos(G4double Y) { YPos = Y; };
+    G4double GetYPos() { return YPos; };
+    inline void SetZPos(G4double Z) { ZPos = Z; };
+    G4double GetZPos() { return ZPos; };
+    inline void SetTheta(G4double theta) { Theta = theta; };
+    G4double GetTheta() { return Theta; };
+    inline void SetPhi(G4double phi) { Phi = phi; };
+    G4double GetPhi() { return Phi; };
+
   private:
   
     // Main Detectors
@@ -85,10 +99,18 @@ class MottEventAction : public G4UserEventAction
     G4int NEPE[4];
     G4int NdEPE[4];     
 
+    // Primary Vertex
+    G4double KEPrime;
+    G4double XPos;
+    G4double YPos;
+    G4double ZPos;
+    G4double Theta;
+    G4double Phi;
+
     // Dump "Detectors"
     //G4double BeEnergyDeposited[6*20];
     //G4double CuEnergyDeposited[18*20];
-     
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

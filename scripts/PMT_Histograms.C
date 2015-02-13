@@ -59,43 +59,39 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t MicroAmp = 6.241e15;		// # electrons/second
   Double_t MeVtoJoule = 1.602e-13;	// J/MeV 
   
-  const char* FileDir = "/home/mjmchugh/Mott/MottG4/output/July_2014";
-  const char* FileStem = "AsymRun";
+  const char* FileDir = "/lustre/expphy/volatile/hallc/qweak/mjmchugh/Mott/Au";
+  const char* FileStem = argv[1];
   
   TChain* pChain = new TChain("Mott");
-  for(Int_t i=1; i<101; i++) pChain->Add(Form("%s/%s_%i.root", FileDir, FileStem, i));
+  for(Int_t i=1; i<10; i++) pChain->Add(Form("%s/%s_%i.root", FileDir, FileStem, i));
 
-  TH1F* hLeft_E = new TH1F("hLeft_E","hLeft_E",1000,0,5);
-  TH1F* hLeft_dE = new TH1F("hLeft_dE","hLeft_dE",1000,0,1.5);
-  TH1F* hLeft_E_PMT = new TH1F("hLeft_E_PMT","hLeft_E_PMT",1000,0,5000);
-  TH1F* hLeft_dE_PMT = new TH1F("hLeft_dE_PMT","hLeft_dE_PMT",1009,0,1500);
+  TH1F* hLeft_E_PMT = new TH1F("hLeft_E_PMT","hLeft_E_PMT",100,0,8000);
+  TH1F* hRight_E_PMT = new TH1F("hRight_E_PMT","hRight_E_PMT",100,0,8000);
+  TH1F* hUp_E_PMT = new TH1F("hUp_E_PMT","hUp_E_PMT",100,0,8000);
+  TH1F* hDown_E_PMT = new TH1F("hDown_E_PMT","hDown_E_PMT",100,0,8000);
 
-  Double_t Left_E, Left_dE;
-  Int_t Left_E_PMT, Left_dE_PMT;  
-  
+  Int_t Left_E_PMT, Right_E_PMT, Up_E_PMT, Down_E_PMT;  
   Int_t nEntries = pChain->GetEntries();
 
   std::cout << "Total number of hits: " << nEntries << std::endl;
 
-  pChain->SetBranchAddress("Left_E",&Left_E);
-  pChain->SetBranchAddress("Left_dE",&Left_dE);
   pChain->SetBranchAddress("Left_E_PMT",&Left_E_PMT);
-  pChain->SetBranchAddress("Left_dE_PMT",&Left_dE_PMT);
+  pChain->SetBranchAddress("Right_E_PMT",&Right_E_PMT);
+  pChain->SetBranchAddress("Up_E_PMT",&Up_E_PMT);
+  pChain->SetBranchAddress("Down_E_PMT",&Down_E_PMT);
  
   for(Int_t i=0; i<nEntries; i++) {
     pChain->GetEntry(i);
-    if(Left_dE_PMT > 0 && Left_E_PMT > 0) {
-      hLeft_E->Fill(Left_E);
-      hLeft_dE->Fill(Left_dE);
-      hLeft_E_PMT->Fill(Left_E_PMT);
-      hLeft_dE_PMT->Fill(Left_dE_PMT);
-    }
+    if(Left_E_PMT > 0) hLeft_E_PMT->Fill(Left_E_PMT);
+    if(Right_E_PMT > 0) hRight_E_PMT->Fill(Right_E_PMT);
+    if(Up_E_PMT > 0) hUp_E_PMT->Fill(Up_E_PMT);
+    if(Down_E_PMT > 0) hDown_E_PMT->Fill(Down_E_PMT);
   }
 
-  gStyle->SetOptFit(1); 	//Make sure fit stats appear
+  //gStyle->SetOptFit(1); 	//Make sure fit stats appear
 
-  hLeft_E->Fit("gaus","V","E1",4.0,5.0);
-  hLeft_E_PMT->Fit("gaus","V","E1",4000,5000);
+  //hLeft_E->Fit("gaus","V","E1",4.0,5.0);
+  //hLeft_E_PMT->Fit("gaus","V","E1",4000,5000);
 
   //TF1* Fit1 = new TF1("SkewNormal1",SkewNormal,3.0,5.0,4);
   //Fit1->SetParNames("Constant","Mean","Sigma","Alpha");
@@ -109,26 +105,36 @@ int main(Int_t argc, Char_t *argv[]) {
   //Fit2->SetLineColor(kBlack);
   //Fit2->SetLineWidth(3);
 
-  TCanvas* c1 = new TCanvas("c1", "Left Detector Histograms", 1000, 1000);
+  TCanvas* c1 = new TCanvas("c1", "E_PMT Detector Histograms", 1000, 1000);
   c1->Divide(2,2);
   c1->cd(1);
-  //hLeft_E->GetXaxis()->SetTitle("LEFT_E [MeV]");
-  hLeft_E->Draw();
-  //hLeft_E->Fit("SkewNormal1","r");
-  c1->cd(2);
-  //hLeft_dE->GetXaxis()->SetTitle("LEFT_dE [MeV]");
-  hLeft_dE->Draw();
-  c1->cd(3);
-  //hLeft_E_PMT->GetXaxis()->SetTitle("LEFT_E PEs");
+  //hLeft_E_PMT->Scale(1.0/hLeft_E_PMT->GetEntries());
+  hLeft_E_PMT->GetXaxis()->SetTitle("LEFT_E PEs");
   hLeft_E_PMT->Draw();
-  //hLeft_E_PMT->Fit("SkewNormal2","r");
+  c1->cd(2);
+  //hRight_E_PMT->Scale(1.0/hRight_E_PMT->GetEntries());
+  hRight_E_PMT->GetXaxis()->SetTitle("RIGHT_E PEs");
+  hRight_E_PMT->Draw();
+  c1->cd(3);
+  //hUp_E_PMT->Scale(1.0/hUp_E_PMT->GetEntries());
+  hUp_E_PMT->GetXaxis()->SetTitle("Up_E PEs");
+  hUp_E_PMT->Draw();
   c1->cd(4);
-  //hLeft_dE_PMT->GetXaxis()->SetTitle("LEFT_dE PEs");
-  hLeft_dE_PMT->Draw();
+  //hDown_E_PMT->Scale(1.0/hDown_E_PMT->GetEntries());
+  hDown_E_PMT->GetXaxis()->SetTitle("Down_E PEs");
+  hDown_E_PMT->Draw();
   c1->cd();
 
+  //Asymmetry calculation
+  Double_t L = hLeft_E_PMT->GetEntries();
+  Double_t R = hRight_E_PMT->GetEntries();
+  Double_t A = (L - R)/(L + R);
+  Double_t dA = TMath::Abs(A)*TMath::Sqrt((L+R)*(1.0/((L-R)*(L-R)) + 1.0/((L+R)*(L+R))));
+
+  std::cout << L << "\t" << R << "\t" << A << "\t" << dA << std::endl;
+  
   // Save the plots as a ROOTfile to make things better!
-  TFile* plotFile = new TFile("LeftDetectorPlots.root", "RECREATE");
+  TFile* plotFile = new TFile(Form("%s_EDetectorPMTPlots.root", FileStem), "RECREATE");
   c1->Write();
   plotFile->Close();
 
