@@ -148,15 +148,15 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4Material* Plastic = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");  
 
   // Print all the materials defined.
-  G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
-  G4cout << *(G4Material::GetMaterialTable()) << G4endl;
+  //G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
+  //G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 
 ///////////////////////////////////////////////////////////////////////////
 //////////////// Principal Geometry (sizes of solids) /////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
   // Inch definition.
-  static const G4double inch = 25.400*mm;
+  static const G4double inch = 25.4*mm;
   
   // World Volume
   WorldMater = Vacuum; /* Vacuum */			// World Material = Vacuum

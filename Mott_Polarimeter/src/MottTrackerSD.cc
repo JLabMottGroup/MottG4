@@ -48,6 +48,7 @@
 MottTrackerSD::MottTrackerSD(G4String name)
 :G4VSensitiveDetector(name)
 {
+  //G4cout << "\t Entering MottTrackerSD::MottTrackerSD()" << G4endl;
   // This method is run before the beam turns on.
   G4String HCname;
   HCname = SensitiveDetectorName;
@@ -58,6 +59,8 @@ MottTrackerSD::MottTrackerSD(G4String name)
   // and set it equal to pEventAction
   // Solved: See Below!
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
+  //G4cout << pEventAction << G4endl;
+  //G4cout << "\t Entering MottTrackerSD::MottTrackerSD()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

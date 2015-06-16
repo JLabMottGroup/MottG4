@@ -24,51 +24,55 @@
 // ********************************************************************
 //
 //
-// $Id: MottPrimaryGeneratorMessenger.hh,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
+// $Id: MottEventActionMessenger.cc,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottPrimaryGeneratorMessenger_h
-#define MottPrimaryGeneratorMessenger_h 1
+#include "MottEventAction.hh"
+#include "MottEventActionMessenger.hh"
 
 #include "globals.hh"
-#include "G4UImessenger.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
-class MottPrimaryGeneratorAction;
-class G4UIdirectory;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithoutParameter;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class MottPrimaryGeneratorMessenger : public G4UImessenger 
+MottEventActionMessenger::MottEventActionMessenger(MottEventAction* myMPGA)
 {
 
-  public: 
-    MottPrimaryGeneratorMessenger(MottPrimaryGeneratorAction*);
-   ~MottPrimaryGeneratorMessenger();
+  myEventAction = myMPGA;
+
+  eventDir = new G4UIdirectory("/EventAction/");
+  eventDir->SetGuidance("Select types of events to record");
+
+  storeAllEventsCmd = new G4UIcmdWithAnInteger("/EventAction/StoreAllEvents", this);
+  storeAllEventsCmd->SetGuidance("Store all events (1) or only those which hit the detectors (0)");
+  storeAllEventsCmd->SetParameterName("StoreAllFlag",false);
+  storeAllEventsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+MottEventActionMessenger::~MottEventActionMessenger() {
+
+  delete eventDir;
+  delete storeAllEventsCmd;
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void MottEventActionMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
+
+  if( command == storeAllEventsCmd ) {
    
-    void SetNewValue(G4UIcommand*, G4String);
+    myEventAction->SetStoreAll(storeAllEventsCmd->GetNewIntValue(newValue));
     
-  private:
+    G4cout << "Set StoreAll = " << newValue << G4endl; 
+    
+  }
   
-    MottPrimaryGeneratorAction* myPrimaryGeneratorAction;
-    
-    // Mott Beam Commands
-    G4UIdirectory* beamDir;
-    G4UIcmdWithADoubleAndUnit* beamEnergyCmd;
-    G4UIcmdWithADoubleAndUnit* energySpreadCmd;
-    G4UIcmdWithADoubleAndUnit* beamDiameterCmd;
-    
-    // Primary Event Commands
-    G4UIdirectory* primaryDir;
-    G4UIcmdWithoutParameter* throwFromUpstreamCmd;
-    G4UIcmdWithoutParameter* throwAtCollimatorsCmd;
-    G4UIcmdWithoutParameter* throwInUserRangeCmd;
-    G4UIcmdWithADoubleAndUnit* thetaMinCmd;
-    G4UIcmdWithADoubleAndUnit* thetaMaxCmd;
-    G4UIcmdWithADoubleAndUnit* phiMinCmd;
-    G4UIcmdWithADoubleAndUnit* phiMaxCmd;
+}
 
-};
-
-#endif

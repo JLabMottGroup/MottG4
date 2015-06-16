@@ -46,6 +46,8 @@
 #include "Randomize.hh"
 #include <iostream>
 #include <cmath>
+#include <map>
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -60,11 +62,19 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   myMessenger = new MottPrimaryGeneratorMessenger(this);
   particleGun = new G4ParticleGun(n_particle);
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
-  
+ 
+  ThrowFromUpstream = false;
+  ThrowAtCollimators = true;
+
   TargetZ = 79;
 
+  GoldELoss[3.0*MeV] = 27.02*MeV/cm;
+  GoldELoss[5.0*MeV] = 32.54*MeV/cm;
+  GoldELoss[6.0*MeV] = 35.26*MeV/cm;
+  GoldELoss[8.0*MeV] = 40.65*MeV/cm;
+
   // Set default 
-  beamEnergy = 5.0*MeV;
+  beamEnergy = 5.0*MeV; 	// kinetic energy
   energySpread = 5e-03*MeV;
   beamDiameter = 1.0*mm;
 
@@ -80,6 +90,8 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   SpinU.resize(5);
   Sherman.resize(5);
 
+
+
   ReadDataFiles();
 
   G4cout << "\tLeaving MottPrimaryGeneratorAction::MottPrimaryGeneratorAction()" <<G4endl;
@@ -93,45 +105,46 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+// All Gun settings changed here will change every event. 
+// Random aspects must be input before calling GeneratePrimaryVertex();
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  //std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 
-  // All Gun settings changed here will change every event. 
-  // Random aspects must be input before calling GeneratePrimaryVertex();
+  pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
-  // Source Position
-  G4int ThrowFromUpstream = 0;
+  // Initialize all variables to 0
+  X = 0;	Y = 0;		Z = 0;
+  Px1 = 0; 	Py1 = 0;	Pz1 = 0;
+  Px2 = 0; 	Py2 = 0;	Pz2 = 0;
+  Theta = 0;	Phi = 0;	Energy = 0;
+  CS = 0; 	S = 0; 		T = 0; 		U = 0;
 
   // Gausian beam profile.  
   G4double TargetLength = myDetector->GetTargetFullLength();
   G4double sigma = beamDiameter/(2.354820045*mm);
-
-  G4double X = G4RandGauss::shoot(0.0,sigma)*mm;
-  G4double Y = G4RandGauss::shoot(0.0,sigma)*mm;
-  G4double Z = (G4UniformRand() - 0.5)*TargetLength + myDetector->GetTargetZPosition();
-
+  X = G4RandGauss::shoot(0.0,sigma)*mm;
+  Y = G4RandGauss::shoot(0.0,sigma)*mm;
+  G4double depth = G4UniformRand()*TargetLength;
+  Z = depth - 0.5*TargetLength + myDetector->GetTargetZPosition();
+  
   G4ThreeVector gunPosition = G4ThreeVector(X,Y,Z);
   G4ThreeVector gunDirection = G4ThreeVector(0.0,0.0,1.0);
   
   // Incident electron's polarization set here
-  G4double Sx = 0.0;
-  G4double Sy = 1.0;
-  G4double Sz = 0.0;
-  G4ThreeVector preScatteredPolarization = G4ThreeVector(Sx,Sy,Sz);
+  G4double Py1 = 1.0;
+  G4ThreeVector preScatteredPolarization = G4ThreeVector(Px1,Py1,Pz1);
 
-  // Beam Energy 
-  G4double energy = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV;
+  // Electron Energy at the scattering vertex (Gaussian minus ~linear ELoss up to the scattering vertex)
+  G4double Energy = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV 
+                    - GoldELoss[beamEnergy]*depth;
 
-  G4double Phi = 0; 
-  G4double Theta = 0;
-  G4double MaxThrow = 1.6*CrossSection[0][589];					// 1.6 times the lowest energy dcs at 172 deg.
   if(ThrowFromUpstream) {
     Z = -10.0*cm;
     gunPosition = G4ThreeVector(X, Y, Z);
-  } else {
+  } else if(ThrowAtCollimators) {
     G4int goodThrow = 0;
+    G4double MaxThrow = 1.6*CrossSection[0][589];				// 1.6 times the lowest energy dcs at 172 deg.
     while (goodThrow==0) { 
       G4double ScatteringAngle = 172.6*deg;					// Average acceptance angle.
       Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	        // Throw from 172.0 to 173.2 degrees
@@ -145,37 +158,55 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       } else if(0.75<=quadrantRoll&&quadrantRoll<=1.0) {
         Phi = 5.0*G4UniformRand()*deg + 267.5*deg;
       }
-      G4double cs = InterpolateCrossSection(Theta/deg,energy/MeV);
-      G4double s = InterpolateSherman(Theta/deg,energy/MeV);
-      G4double t = InterpolateT(Theta/deg,energy/MeV);
-      G4double u = InterpolateU(Theta/deg,energy/MeV);
-      cs = cs*(1 + s*cos(Phi));
+      CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
+      S = InterpolateSherman(Theta/deg,Energy/MeV);
+      T = InterpolateT(Theta/deg,Energy/MeV);
+      U = InterpolateU(Theta/deg,Energy/MeV);
+      CS = CS*(1 + S*cos(Phi));
       G4double rejectionThrow = MaxThrow*G4UniformRand();
-      if(rejectionThrow<=cs) {
+      if(rejectionThrow<=CS) {
       	goodThrow = 1;  
-      	G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
+      	//G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
       }
-    }
-      
+    }      
     gunDirection.setRThetaPhi(1.0,Theta,Phi);   
+  } else {
+    Theta = ThetaMin + (ThetaMax-ThetaMin)*G4UniformRand();
+    Phi = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
+    CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
+    S = InterpolateSherman(Theta/deg,Energy/MeV);
+    T = InterpolateT(Theta/deg,Energy/MeV);
+    U = InterpolateU(Theta/deg,Energy/MeV);
+    CS = CS*(1 + S*cos(Phi));
   }
-  
-  pEventAction->SetKEPrime(energy);
-  pEventAction->SetXPos(X);
+
+  // Calculate the outgoing electron's polarization (post scattering)
+  CalculateNewPol();
+
+  // Primary verted quantitites to store in rootfile
+  pEventAction->SetKEPrime(Energy);			// Energy
+  pEventAction->SetXPos(X);				// location
   pEventAction->SetYPos(Y);
   pEventAction->SetZPos(Z);
-  pEventAction->SetTheta(Theta);
-  pEventAction->SetPhi(Phi);
+  pEventAction->SetTheta(Theta);			// Scattering angle
+  pEventAction->SetPhi(Phi);  				// Azimuthal angle
+  pEventAction->SetXPol(Px2);				// Outgoing Polarization
+  pEventAction->SetYPol(Py2);
+  pEventAction->SetZPol(Pz2);
+  pEventAction->SetCS(CS);				// Differential Cross Section
+  pEventAction->SetS(S);				// Sherman Function 
+  pEventAction->SetT(T);				// SpinT
+  pEventAction->SetU(U);				// SpinU
 
-  
+  //G4cout << energy << "\t" << X << "\t" << Y << "\t" << Z << "\t" << Theta << "\t" << Phi << "\t" << G4endl;
 
   // Set variable gun properties
-  particleGun->SetParticleEnergy(energy);
+  particleGun->SetParticleEnergy(Energy);			// scattered electron KE
   particleGun->SetParticlePosition(gunPosition);
   particleGun->SetParticleMomentumDirection(gunDirection); 
   particleGun->GeneratePrimaryVertex(anEvent);
   
-  std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  //std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -281,7 +312,7 @@ G4double MottPrimaryGeneratorAction::InterpolateCrossSection(G4double theta, G4d
       testEnergy = beamEnergy + (0.05*j - 0.10);
       if(energy < testEnergy) {
         E_lo = testEnergy - 0.05;	E_hi = testEnergy;
-        j_lo = j-1;		j_hi = j;
+        j_lo = j-1;			j_hi = j;
         break;
       }
     }
@@ -463,3 +494,38 @@ void MottPrimaryGeneratorAction::SetBeamEnergy(G4double energy) {
   ReadDataFiles();
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+int MottPrimaryGeneratorAction::CalculateNewPol() {
+  
+  // Define the basis vectors used for the new polarization
+  // normal perpendicular to the scattering plane n
+  G4double e1x = -sin(Phi);
+  G4double e1y = cos(Phi);
+  G4double e1z = 0;
+  
+  // n x P 
+  G4double e2x = 0;
+  G4double e2y = 0;
+  G4double e2z = -sin(Phi);
+
+  // n x ( P x n )
+  G4double e3x = sin(Phi)*cos(Phi);
+  G4double e3y = sin(Phi)*sin(Phi);
+  G4double e3z = 0;
+
+  // Normalization of the new polarization vector
+  G4double norm = 1 + cos(Phi)*S;
+  
+  if(norm > 0) {
+    // New Polarization
+    Px2 = ((cos(Phi) + S)*e1x + U*e2x + T*e3x)/norm;
+    Py2 = ((cos(Phi) + S)*e1y + U*e2y + T*e3y)/norm;
+    Pz2 = ((cos(Phi) + S)*e1z + U*e2z + T*e3z)/norm;
+  } else {
+    Px2 = 0;
+    Py2 = 0;
+    Pz2 = 0;
+  }
+
+  return 0;
+}

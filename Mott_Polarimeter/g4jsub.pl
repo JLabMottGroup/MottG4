@@ -1,4 +1,4 @@
-#/usr/bin/env perl
+#!/usr/bin/env perl
 use strict;
 use warnings;
 
@@ -30,14 +30,15 @@ sub print_header;   #prints macfile header
 sub print_footer;   #prints macfile footer
 sub print_xml;      #prints xml file
 
-my ($help,$dryrun,$rootdir,$outdir);
+my ($help,$dryrun,$rootdir,$outdir,$tapedir);
 GetOptions(
- "help|h|?"           =>  \$help,
- "Nevents|events=i"   =>  \$Nevents,
- "Njobs|jobs=i"       =>  \$Njobs,
- "dry-run|dry|test"   =>  \$dryrun,
- "root-dir|r=s"	      =>  \$rootdir,
- "out|o=s"	      =>  \$outdir
+ "help|h|?"             =>  \$help,
+ "Nevents|events=i"     =>  \$Nevents,
+ "Njobs|jobs=i"         =>  \$Njobs,
+ "dry-run|dry|test"     =>  \$dryrun,
+ "root-dir|r=s"	        =>  \$rootdir,
+ "out|o=s"	        =>  \$outdir,
+ "tape-destination|t=s" =>  \$tapedir
 );
 
 #die helpscreen unless $#ARGV!=0;
@@ -47,6 +48,7 @@ mkdir "xml" unless (-e "xml");
 mkdir "macros" unless (-e "macros");
 mkdir "jsub" unless (-e "jsub");
 mkdir "jsub/output" unless (-e "jsub/output");
+mkdir "rootfiles" unless (-e "rootfiles");
 
 $Njobs   = 10		unless $Njobs;
 $Nevents = 10000	unless $Nevents;
@@ -117,7 +119,7 @@ sub-directory.
 Calling syntax:
   perl g4jsub.pl [options]
 Example:
-  perl g4sub.pl sample.mac --events 20000 --jobs 5 -r "/work/username/directory" 
+  perl g4jsub.pl sample.mac --events 20000 --jobs 5 -r "/work/username/directory" 
 
 Options include:
   --help       displays this helpful message
@@ -132,6 +134,8 @@ Options include:
   --dry-run    do a dry run: create all the files
                 but don't submit any.
                 Useful for testing.
+  -t           set the destination for ROOTfile output to tape
+		The default DOES NOT stage to tape.
 EOF
 die $helpstring if $help;
 }
@@ -203,6 +207,41 @@ build/mott macros/jobs/$basename\.mac
 
 </Request>
 ";
+
+if( $tapedir ) {
+  my $rootfile = "/volatile/hallc/qweak/$user/$basename\.root";
+
+  if ( $rootdir ) {
+    $rootfile = "$rootdir/$basename.root";
+  }
+
+  $xmlfile = 
+"
+<Request>
+  <Email email=\"$user\@jlab.org\" request=\"false\" job=\"true\"/>
+  <Project name=\"qweak\"/>
+  <Track name=\"simulation\"/>
+  <Name name=\"$basename\"/>
+  <OS name=\"centos62\"/>
+  <Command><![CDATA[
+source /home/$user/.login
+cd $QwGeantDir
+build/QweakSimG4 macros/jobs/$basename\.mac
+jput $rootfile $tapedir
+rm -f $rootfile 
+  ]]></Command>
+
+  <Memory space=\"2000\" unit=\"MB\"/>
+
+  <Job>
+    <Stdout dest=\"$outfile\"/>
+    <Stderr dest=\"$errfile\"/>
+  </Job>
+
+</Request>
+";
+} 
+
 print $xml "$xmlfile\n";
 return;
 } #end print_xml

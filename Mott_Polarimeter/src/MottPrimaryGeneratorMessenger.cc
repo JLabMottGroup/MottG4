@@ -35,6 +35,7 @@
 #include "globals.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -63,7 +64,46 @@ MottPrimaryGeneratorMessenger::MottPrimaryGeneratorMessenger(MottPrimaryGenerato
   beamDiameterCmd->SetParameterName("BeamDiameter", false);
   beamDiameterCmd->SetUnitCategory("Length");
   beamDiameterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  primaryDir = new G4UIdirectory("/PrimaryGenerator/");
+  primaryDir->SetGuidance("Primary Generator Commands");
   
+  throwFromUpstreamCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowFromUpstream",this);
+  throwFromUpstreamCmd->SetGuidance("Throw an incident beam at the target foil");
+  throwFromUpstreamCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  throwAtCollimatorsCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowAtCollimators",this);
+  throwAtCollimatorsCmd->SetGuidance("Throw electrons from target foil at the collimator holes");
+  throwAtCollimatorsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  throwInUserRangeCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowInUserRange",this);
+  throwInUserRangeCmd->SetGuidance("Throw electrons from target foil at the collimator holes");
+  throwInUserRangeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  thetaMinCmd = new G4UIcmdWithADoubleAndUnit("/PrimaryGenerator/SetThetaMin", this);
+  thetaMinCmd->SetGuidance("Select Minimum Scattering Angle");
+  thetaMinCmd->SetParameterName("ThetaMin", false);
+  thetaMinCmd->SetUnitCategory("Angle");
+  thetaMinCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  thetaMaxCmd = new G4UIcmdWithADoubleAndUnit("/PrimaryGenerator/SetThetaMax", this);
+  thetaMaxCmd->SetGuidance("Select Maximum Scattering Angle");
+  thetaMaxCmd->SetParameterName("ThetaMax", false);
+  thetaMaxCmd->SetUnitCategory("Angle");
+  thetaMaxCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  phiMinCmd = new G4UIcmdWithADoubleAndUnit("/PrimaryGenerator/SetPhiMin", this);
+  phiMinCmd->SetGuidance("Select Minimum Azimuthal Angle");
+  phiMinCmd->SetParameterName("PhiMin", false);
+  phiMinCmd->SetUnitCategory("Angle");
+  phiMinCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  phiMaxCmd = new G4UIcmdWithADoubleAndUnit("/PrimaryGenerator/SetPhiMax", this);
+  phiMaxCmd->SetGuidance("Select Maximum Azimuthal Angle");
+  phiMaxCmd->SetParameterName("PhiMax", false);
+  phiMaxCmd->SetUnitCategory("Angle");
+  phiMaxCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -74,6 +114,12 @@ MottPrimaryGeneratorMessenger::~MottPrimaryGeneratorMessenger() {
   delete beamEnergyCmd;
   delete energySpreadCmd;
   delete beamDiameterCmd;
+
+  delete primaryDir;
+  delete thetaMinCmd;
+  delete thetaMaxCmd;
+  delete phiMinCmd;
+  delete phiMaxCmd;
  
 }
 
@@ -110,6 +156,71 @@ void MottPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String n
            << " mm" << G4endl;
   
   }
+
+  if( command == throwFromUpstreamCmd ) {
+    
+    myPrimaryGeneratorAction->SetThrowFromUpstream();
+    
+    G4cout << "Set ThrowFromUpstream to true." << G4endl;    
+  
+  }
+
+  if( command == throwAtCollimatorsCmd ) {
+    
+    myPrimaryGeneratorAction->SetThrowAtCollimators();
+    
+    G4cout << "Set ThrowFromUpstream to false, ThrowAtCollimators to true." << G4endl;    
+  
+  }
+
+  if( command == throwInUserRangeCmd ) {
+    
+    myPrimaryGeneratorAction->SetThrowInUserRange();
+    
+    G4cout << "Set ThrowFromUpstream to false, ThrowAtCollimators to false." << G4endl;    
+  
+  }
+
+  if( command == thetaMinCmd ) {
+
+    myPrimaryGeneratorAction->SetThetaMin(thetaMinCmd->GetNewDoubleValue(newValue));
+
+    G4cout << "Set Minimum Scattering Angle [0 deg, 180 deg] to: "
+           << myPrimaryGeneratorAction->GetThetaMin()/deg
+           << " deg" << G4endl;
+
+  } 
+
+  if( command == thetaMaxCmd ) {
+
+    myPrimaryGeneratorAction->SetThetaMax(thetaMaxCmd->GetNewDoubleValue(newValue));
+
+    G4cout << "Set Maximum Scattering Angle [0 deg, 180 deg] to: "
+           << myPrimaryGeneratorAction->GetThetaMax()/deg
+           << " deg" << G4endl;
+
+  } 
+
+  if( command == phiMinCmd ) {
+
+    myPrimaryGeneratorAction->SetPhiMin(phiMinCmd->GetNewDoubleValue(newValue));
+
+    G4cout << "Set Minimum Scattering Angle [0 deg, 180 deg] to: "
+           << myPrimaryGeneratorAction->GetPhiMin()/deg
+           << " deg" << G4endl;
+
+  } 
+
+  if( command == phiMaxCmd ) {
+
+    myPrimaryGeneratorAction->SetPhiMax(phiMaxCmd->GetNewDoubleValue(newValue));
+
+    G4cout << "Set Maximum Scattering Angle [0 deg, 180 deg] to: "
+           << myPrimaryGeneratorAction->GetPhiMax()/deg
+           << " deg" << G4endl;
+
+  } 
+
 
 }
 

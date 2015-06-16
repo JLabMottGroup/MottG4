@@ -24,51 +24,38 @@
 // ********************************************************************
 //
 //
-// $Id: MottPrimaryGeneratorMessenger.hh,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
+// $Id: MottEventActionMessenger.hh,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottPrimaryGeneratorMessenger_h
-#define MottPrimaryGeneratorMessenger_h 1
+#ifndef MottEventActionMessenger_h
+#define MottEventActionMessenger_h 1
 
 #include "globals.hh"
 #include "G4UImessenger.hh"
 
-class MottPrimaryGeneratorAction;
+class MottEventAction;
 class G4UIdirectory;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithoutParameter;
+class G4UIcmdWithAnInteger;
 
-class MottPrimaryGeneratorMessenger : public G4UImessenger 
+class MottEventActionMessenger : public G4UImessenger 
 {
 
   public: 
-    MottPrimaryGeneratorMessenger(MottPrimaryGeneratorAction*);
-   ~MottPrimaryGeneratorMessenger();
+    MottEventActionMessenger(MottEventAction*);
+   ~MottEventActionMessenger();
    
     void SetNewValue(G4UIcommand*, G4String);
     
   private:
   
-    MottPrimaryGeneratorAction* myPrimaryGeneratorAction;
+    MottEventAction* myEventAction;
     
     // Mott Beam Commands
-    G4UIdirectory* beamDir;
-    G4UIcmdWithADoubleAndUnit* beamEnergyCmd;
-    G4UIcmdWithADoubleAndUnit* energySpreadCmd;
-    G4UIcmdWithADoubleAndUnit* beamDiameterCmd;
+    G4UIdirectory* eventDir;
+    G4UIcmdWithAnInteger* storeAllEventsCmd;
     
-    // Primary Event Commands
-    G4UIdirectory* primaryDir;
-    G4UIcmdWithoutParameter* throwFromUpstreamCmd;
-    G4UIcmdWithoutParameter* throwAtCollimatorsCmd;
-    G4UIcmdWithoutParameter* throwInUserRangeCmd;
-    G4UIcmdWithADoubleAndUnit* thetaMinCmd;
-    G4UIcmdWithADoubleAndUnit* thetaMaxCmd;
-    G4UIcmdWithADoubleAndUnit* phiMinCmd;
-    G4UIcmdWithADoubleAndUnit* phiMaxCmd;
-
 };
 
 #endif

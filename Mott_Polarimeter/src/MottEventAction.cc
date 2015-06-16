@@ -43,6 +43,7 @@
  
 MottEventAction::MottEventAction()
  : G4UserEventAction(),
+   StoreAll(),
    Edep(),
    dEdep(),
    EtrackL(),
@@ -54,8 +55,18 @@ MottEventAction::MottEventAction()
    YPos(),
    ZPos(),
    Theta(),
-   Phi()
-{}
+   Phi(),
+   XPol(),
+   YPol(),
+   ZPol(),
+   CS(),
+   S(),
+   T(),
+   U()
+{
+  //G4cout << "\tEntering MottEventAction::MottEventAction()" << G4endl;
+  //G4cout << "\tLeaving MottEventAction::MottEventAction()" << G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
@@ -66,7 +77,7 @@ MottEventAction::~MottEventAction()
  
 void MottEventAction::BeginOfEventAction(const G4Event*)
 {
-  std::cout << "\tEntering MottEventAction::BeginOfEventAction()" << std::endl;
+  //std::cout << "\tEntering MottEventAction::BeginOfEventAction()" << std::endl;
   
   for(G4int i=0; i<4; i++) {
     Edep[i] = 0.0;
@@ -83,6 +94,13 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
   ZPos = 0;
   Theta = 0;
   Phi = 0;
+  XPol = 0;
+  YPol = 0;
+  ZPol = 0;
+  CS = 0;
+  S = 0;
+  T = 0;
+  U = 0;
 
   /*
   for(G4int i=0; i<6*20; i++) {
@@ -94,7 +112,7 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
   }
   */
 
-  std::cout << "\tLeaving MottEventAction::BeginOfEventAction()" << std::endl;
+  //std::cout << "\tLeaving MottEventAction::BeginOfEventAction()" << std::endl;
 
 }
 
@@ -102,7 +120,7 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
  
 void MottEventAction::EndOfEventAction(const G4Event* evt)
 {
-  std::cout << "\tEntering MottEventAction::EndOfEventAction()" << std::endl;
+  //std::cout << "\tEntering MottEventAction::EndOfEventAction()" << std::endl;
   
   G4int event_id = evt->GetEventID();
 
@@ -137,7 +155,7 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
   */
 
   // Fill ntuples
-  if (HasBeenHit>0) {
+  if (HasBeenHit>0 || StoreAll == 1) {
     
     // UP
     analysisManager->FillNtupleDColumn(0, Edep[0]);
@@ -178,6 +196,20 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     
     // Vertex Info
     analysisManager->FillNtupleDColumn(25, KEPrime);
+    analysisManager->FillNtupleDColumn(26, XPos);
+    analysisManager->FillNtupleDColumn(27, YPos);
+    analysisManager->FillNtupleDColumn(28, ZPos);
+    analysisManager->FillNtupleDColumn(29, Theta);
+    analysisManager->FillNtupleDColumn(30, Phi);
+    analysisManager->FillNtupleDColumn(31, XPol);	
+    analysisManager->FillNtupleDColumn(32, YPol);
+    analysisManager->FillNtupleDColumn(33, ZPol);
+
+    // Primary Vertex Dynamics
+    analysisManager->FillNtupleDColumn(34, CS);
+    analysisManager->FillNtupleDColumn(35, S);
+    analysisManager->FillNtupleDColumn(36, T);
+    analysisManager->FillNtupleDColumn(37, U);
 
     /* Be Dump Plate
     for(G4int i=0; i<6*20; i++) {
@@ -193,7 +225,7 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     analysisManager->AddNtupleRow();
   }
 
-  std::cout << "\tLeaving MottEventAction::EndOfEventAction()" << std::endl;
+  //std::cout << "\tLeaving MottEventAction::EndOfEventAction()" << std::endl;
 
 }
 

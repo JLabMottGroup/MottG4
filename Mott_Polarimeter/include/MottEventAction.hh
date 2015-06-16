@@ -86,8 +86,27 @@ class MottEventAction : public G4UserEventAction
     G4double GetTheta() { return Theta; };
     inline void SetPhi(G4double phi) { Phi = phi; };
     G4double GetPhi() { return Phi; };
+    inline void SetXPol(G4double X) { XPol = X; };
+    G4double GetXPol() { return XPol; };
+    inline void SetYPol(G4double Y) { YPol = Y; };
+    G4double GetYPol() { return YPol; };
+    inline void SetZPol(G4double Z) { ZPol = Z; };
+    G4double GetZPol() { return ZPol; };
+    inline void SetCS(G4double cs) { CS = cs; };
+    G4double GetCS() { return CS; };
+    inline void SetS(G4double s) { S = s; };
+    G4double GetS() { return S; };
+    inline void SetT(G4double t) { T = t; };
+    G4double GetT() { return T; };
+    inline void SetU(G4double u) { U = u; };
+    G4double GetU() { return U; };
+
+    void SetStoreAll(G4int value = 1) { StoreAll = value; };
 
   private:
+
+    // Store all events flag
+    G4int StoreAll;
   
     // Main Detectors
     G4double Edep[4];
@@ -101,11 +120,20 @@ class MottEventAction : public G4UserEventAction
 
     // Primary Vertex
     G4double KEPrime;
-    G4double XPos;
+    G4double XPos;	// Scattering Vertex location
     G4double YPos;
     G4double ZPos;
     G4double Theta;
-    G4double Phi;
+    G4double Phi; 
+    G4double XPol;	// New Polarization vector
+    G4double YPol;
+    G4double ZPol;
+
+    // Dynamic Variables
+    G4double CS;
+    G4double S;
+    G4double T;
+    G4double U;
 
     // Dump "Detectors"
     //G4double BeEnergyDeposited[6*20];
