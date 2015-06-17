@@ -90,8 +90,6 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   SpinU.resize(5);
   Sherman.resize(5);
 
-
-
   ReadDataFiles();
 
   G4cout << "\tLeaving MottPrimaryGeneratorAction::MottPrimaryGeneratorAction()" <<G4endl;
@@ -109,7 +107,7 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 // Random aspects must be input before calling GeneratePrimaryVertex();
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
@@ -169,7 +167,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       	//G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
       }
     }      
-    gunDirection.setRThetaPhi(1.0,Theta,Phi);   
+    gunDirection.setRThetaPhi(1.0,Theta,Phi);
   } else {
     Theta = ThetaMin + (ThetaMax-ThetaMin)*G4UniformRand();
     Phi = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
@@ -182,6 +180,10 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Calculate the outgoing electron's polarization (post scattering)
   CalculateNewPol();
+
+  //G4cout << ThrowFromUpstream << " " << ThrowAtCollimators << G4endl;
+  //G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta << " " << Phi << " "
+  //       << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
 
   // Primary verted quantitites to store in rootfile
   pEventAction->SetKEPrime(Energy);			// Energy
