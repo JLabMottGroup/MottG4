@@ -107,7 +107,7 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 // Random aspects must be input before calling GeneratePrimaryVertex();
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
@@ -182,8 +182,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   CalculateNewPol();
 
   //G4cout << ThrowFromUpstream << " " << ThrowAtCollimators << G4endl;
-  G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta/deg << " " << Phi/deg << " "
-         << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
+  //G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta << " " << Phi << " "
+  //       << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
 
   // Primary verted quantitites to store in rootfile
   pEventAction->SetKEPrime(Energy);			// Energy
