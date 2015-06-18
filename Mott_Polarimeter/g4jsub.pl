@@ -156,6 +156,9 @@ print $fh "$header\n";
 sub print_footer {
   my ($fh,$basename,$Nevents) = @_;
 
+  my $seed1 = int ( rand(1e9 ) );
+  my $seed2 = int ( rand(1e9 ) );
+
   my $rootfile = "/volatile/hallc/qweak/$user/Mott/$basename\.root";
 
   if ( $rootdir ) {
@@ -165,6 +168,7 @@ sub print_footer {
   my $footer =
   "
 # load/execute this macro
+/random/setSeeds $seed1 $seed2
 /Analysis/RootFileName $rootfile
 /run/beamOn $Nevents
 ";
@@ -225,8 +229,8 @@ if( $tapedir ) {
   <OS name=\"centos62\"/>
   <Command><![CDATA[
 source /home/$user/.login
-cd $QwGeantDir
-build/QweakSimG4 macros/jobs/$basename\.mac
+cd $MottGeantDir/Mott_Polarimeter
+build/mott macros/jobs/$basename\.mac
 jput $rootfile $tapedir
 rm -f $rootfile 
   ]]></Command>

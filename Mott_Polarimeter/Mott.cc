@@ -133,6 +133,10 @@ int main(int argc,char** argv)
   delete runManager;
   delete verbosity;
 
+  G4long time2 = time(0);
+ 
+  G4cout << time2 << " - " << seed << " = " << time2-seed << G4endl; 
+
   return 0;
 }
 

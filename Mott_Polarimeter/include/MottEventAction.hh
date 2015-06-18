@@ -35,6 +35,7 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 class G4Event;
+class MottEventActionMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -104,6 +105,8 @@ class MottEventAction : public G4UserEventAction
     void SetStoreAll(G4int value = 1) { StoreAll = value; };
 
   private:
+
+    MottEventActionMessenger* myMessenger;
 
     // Store all events flag
     G4int StoreAll;

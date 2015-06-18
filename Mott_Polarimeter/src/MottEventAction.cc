@@ -31,6 +31,7 @@
  
 #include "MottEventAction.hh"
 #include "MottAnalysis.hh"
+#include "MottEventActionMessenger.hh"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -65,6 +66,8 @@ MottEventAction::MottEventAction()
    U()
 {
   //G4cout << "\tEntering MottEventAction::MottEventAction()" << G4endl;
+  myMessenger = new MottEventActionMessenger(this);
+  
   //G4cout << "\tLeaving MottEventAction::MottEventAction()" << G4endl;
 }
 
@@ -88,20 +91,6 @@ void MottEventAction::BeginOfEventAction(const G4Event*)
     NumdEPhotons[i] = 0; 
   }
   
-  KEPrime = 0;
-  XPos = 0;
-  YPos = 0;
-  ZPos = 0;
-  Theta = 0;
-  Phi = 0;
-  XPol = 0;
-  YPol = 0;
-  ZPol = 0;
-  CS = 0;
-  S = 0;
-  T = 0;
-  U = 0;
-
   /*
   for(G4int i=0; i<6*20; i++) {
     BeEnergyDeposited[i] = 0;
@@ -153,6 +142,9 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     if(BeEnergyDeposited[i]!=0) HasBeenHit++;
   }
   */
+
+//  G4cout << KEPrime << " " << XPos << " " << YPos << " " << ZPos << " " << Theta << " " << Phi << " "
+//         << XPol << " " << YPol << " " << ZPol << " " << CS << " " << S << " " << T << " " << U << G4endl;  
 
   // Fill ntuples
   if (HasBeenHit>0 || StoreAll == 1) {
