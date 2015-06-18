@@ -54,7 +54,7 @@ MottTrackerHit::MottTrackerHit(const MottTrackerHit& right)
   CopyNo      = right.CopyNo;
   trackID     = right.trackID;
   edep        = right.edep;
-  tracklength = right.tracklength;	
+  //tracklength = right.tracklength;	
   pos         = right.pos;
 }
 
@@ -64,7 +64,7 @@ const MottTrackerHit& MottTrackerHit::operator=(const MottTrackerHit& right)
 {
   trackID     = right.trackID;
   edep        = right.edep;
-  tracklength = right.tracklength;	
+  //tracklength = right.tracklength;	
   pos         = right.pos;
   return *this;
 }
@@ -100,7 +100,7 @@ void MottTrackerHit::Print()
   G4cout << "  trackID: " << trackID
          << "  CopyNo: " << CopyNo
          << "  energy deposit: " << G4BestUnit(edep,"Energy")
-         << "  track length: " << G4BestUnit(tracklength, "Length") 
+         //<< "  track length: " << G4BestUnit(tracklength, "Length") 
          << "  position: " << G4BestUnit(pos,"Length") << G4endl;
 }
 

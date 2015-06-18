@@ -90,7 +90,7 @@ G4bool MottTrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   // std::cout << "\tEntering  MottTrackerSD::ProcessHits()" << std::endl;
 
   G4double edep = aStep->GetTotalEnergyDeposit();
-  G4double dl   = aStep->GetStepLength();
+  //G4double dl   = aStep->GetStepLength();
  
   G4StepPoint* point = aStep->GetPreStepPoint();
   G4int copy = point->GetTouchableHandle()->GetCopyNumber();
@@ -101,7 +101,7 @@ G4bool MottTrackerSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   newHit->SetCopyNo(copy);
   newHit->SetTrackID(aStep->GetTrack()->GetTrackID());
   newHit->SetEdep(edep);
-  newHit->SetTrackLength(dl);
+  //newHit->SetTrackLength(dl);
   newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
   trackerCollection->insert(newHit);
   
@@ -122,14 +122,14 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
   G4int copy = 0;
   G4int NbHits = trackerCollection->entries();
   G4double totalEdep = 0.0;
-  G4double totalLength = 0.0;
+  //G4double totalLength = 0.0;
 
   G4int ngamma = GetPhotonCount();
   
   for (G4int i=0; i<NbHits; i++){
     //(*trackerCollection)[i]->Print();
     totalEdep += (*trackerCollection)[i]->GetEdep();
-    totalLength += (*trackerCollection)[i]->GetTrackLength();
+    //totalLength += (*trackerCollection)[i]->GetTrackLength();
   }
     
   if (verboseLevel>0) { 
@@ -137,54 +137,55 @@ void MottTrackerSD::EndOfEvent(G4HCofThisEvent*)
            << "\nCopy Number: " << copy
            << "\nNumber of Hits: " << NbHits
            << "\nTotal Energy Deposited: " << G4BestUnit(totalEdep, "Energy")
-           << "\nTrack Length: " << G4BestUnit(totalLength, "Length") << "\n" << G4endl;
+           //<< "\nTrack Length: " << G4BestUnit(totalLength, "Length") 
+           << "\n" << G4endl;
   }
 
   // UP
   if ( trackerCollection->GetSDname() == "dE_1" ) { 
     pEventAction->SetdEdep(totalEdep, 0);
-    pEventAction->SetdEtrackL(totalLength, 0);
+    //pEventAction->SetdEtrackL(totalLength, 0);
     pEventAction->SetNumdEPhotons(ngamma, 0);
   }
   if ( trackerCollection->GetSDname() == "E_1" ) { 
     pEventAction->SetEdep(totalEdep, 0);
-    pEventAction->SetEtrackL(totalLength, 0);
+    //pEventAction->SetEtrackL(totalLength, 0);
     pEventAction->SetNumEPhotons(ngamma, 0);
   }  
   
   // DOWN
   if ( trackerCollection->GetSDname() == "dE_2" ) { 
     pEventAction->SetdEdep(totalEdep, 1);
-    pEventAction->SetdEtrackL(totalLength, 1);
+    //pEventAction->SetdEtrackL(totalLength, 1);
     pEventAction->SetNumdEPhotons(ngamma, 1);
   }
   if ( trackerCollection->GetSDname() == "E_2" ) { 
     pEventAction->SetEdep(totalEdep, 1);
-    pEventAction->SetEtrackL(totalLength, 1);
+    //pEventAction->SetEtrackL(totalLength, 1);
     pEventAction->SetNumEPhotons(ngamma, 1);
   }
   
   // LEFT
   if ( trackerCollection->GetSDname() == "dE_3" ) { 
     pEventAction->SetdEdep(totalEdep, 2);
-    pEventAction->SetdEtrackL(totalLength, 2);
+    //pEventAction->SetdEtrackL(totalLength, 2);
     pEventAction->SetNumdEPhotons(ngamma, 2);
   }
   if ( trackerCollection->GetSDname() == "E_3" ) { 
     pEventAction->SetEdep(totalEdep, 2);
-    pEventAction->SetEtrackL(totalLength, 2);    
+    //pEventAction->SetEtrackL(totalLength, 2);    
     pEventAction->SetNumEPhotons(ngamma, 2);
   }  
   
   // RIGHT
   if ( trackerCollection->GetSDname() == "dE_4" ) { 
     pEventAction->SetdEdep(totalEdep, 3);
-    pEventAction->SetdEtrackL(totalLength, 3);
+    //pEventAction->SetdEtrackL(totalLength, 3);
     pEventAction->SetNumdEPhotons(ngamma, 3);
   }
   if ( trackerCollection->GetSDname() == "E_4" ) { 
     pEventAction->SetEdep(totalEdep, 3);
-    pEventAction->SetEtrackL(totalLength, 3);
+    //pEventAction->SetEtrackL(totalLength, 3);
     pEventAction->SetNumEPhotons(ngamma, 3);
   } 
   

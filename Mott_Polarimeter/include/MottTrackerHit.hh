@@ -54,19 +54,17 @@ class MottTrackerHit : public G4VHit
 
       void Draw();
       void Print();
-
-  public:
   
       void SetCopyNo(G4int copy) { CopyNo = copy; };
       void SetTrackID(G4int track) { trackID = track; };
       void SetEdep(G4double de) { edep = de; };
-      void SetTrackLength(G4double dl) { tracklength = dl; };
+      //void SetTrackLength(G4double dl) { tracklength = dl; };
       void SetPos(G4ThreeVector xyz) { pos = xyz; };
       
       G4int GetCopyNo() { return CopyNo; };		
       G4int GetTrackID() { return trackID; };
       G4double GetEdep() { return edep; };
-      G4double GetTrackLength() { return tracklength; };      
+      //G4double GetTrackLength() { return tracklength; };      
       G4ThreeVector GetPos() { return pos; };
       
   private:
@@ -74,7 +72,7 @@ class MottTrackerHit : public G4VHit
       G4int CopyNo;
       G4int trackID;
       G4double edep;
-      G4double tracklength;
+      //G4double tracklength;
       G4ThreeVector pos;
 };
 

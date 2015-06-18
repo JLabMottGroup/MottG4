@@ -95,59 +95,59 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   // Creating Ntuple
   analysisManager->CreateNtuple("Mott", "Edep and TrackL");
   
-  // UP Detector (0-3)
+  // UP Detector (0-1)
   analysisManager->CreateNtupleDColumn("Up_E");
   analysisManager->CreateNtupleDColumn("Up_dE");
-  analysisManager->CreateNtupleDColumn("Up_E_dl");
-  analysisManager->CreateNtupleDColumn("Up_dE_dl");
+  //analysisManager->CreateNtupleDColumn("Up_E_dl");
+  //analysisManager->CreateNtupleDColumn("Up_dE_dl");
   
-  // DOWN Detector (4-7)
+  // DOWN Detector (2-3)
   analysisManager->CreateNtupleDColumn("Down_E");
   analysisManager->CreateNtupleDColumn("Down_dE");
-  analysisManager->CreateNtupleDColumn("Down_E_dl");
-  analysisManager->CreateNtupleDColumn("Down_dE_dl");
+  //analysisManager->CreateNtupleDColumn("Down_E_dl");
+  //analysisManager->CreateNtupleDColumn("Down_dE_dl");
   
-  // LEFT Detector (8-11)
+  // LEFT Detector (4-5)
   analysisManager->CreateNtupleDColumn("Left_E");
   analysisManager->CreateNtupleDColumn("Left_dE");
-  analysisManager->CreateNtupleDColumn("Left_E_dl");
-  analysisManager->CreateNtupleDColumn("Left_dE_dl");
+  //analysisManager->CreateNtupleDColumn("Left_E_dl");
+  //analysisManager->CreateNtupleDColumn("Left_dE_dl");
   
-  // RIGHT Detector (12-15)
+  // RIGHT Detector (6-7)
   analysisManager->CreateNtupleDColumn("Right_E");
   analysisManager->CreateNtupleDColumn("Right_dE");
-  analysisManager->CreateNtupleDColumn("Right_E_dl");
-  analysisManager->CreateNtupleDColumn("Right_dE_dl");
+  //analysisManager->CreateNtupleDColumn("Right_E_dl");
+  //analysisManager->CreateNtupleDColumn("Right_dE_dl");
   
   // "PMT" response.
-  analysisManager->CreateNtupleIColumn("Up_E_PMT");	// 16
-  analysisManager->CreateNtupleIColumn("Up_dE_PMT");	// 17
-  analysisManager->CreateNtupleIColumn("Down_E_PMT");	// 18
-  analysisManager->CreateNtupleIColumn("Down_dE_PMT");  // 19
-  analysisManager->CreateNtupleIColumn("Left_E_PMT");   // 20
-  analysisManager->CreateNtupleIColumn("Left_dE_PMT");  // 21
-  analysisManager->CreateNtupleIColumn("Right_E_PMT");  // 22
-  analysisManager->CreateNtupleIColumn("Right_dE_PMT"); // 23
+  analysisManager->CreateNtupleIColumn("Up_E_PMT");	// 8
+  analysisManager->CreateNtupleIColumn("Up_dE_PMT");	// 9
+  analysisManager->CreateNtupleIColumn("Down_E_PMT");	// 10
+  analysisManager->CreateNtupleIColumn("Down_dE_PMT");  // 11
+  analysisManager->CreateNtupleIColumn("Left_E_PMT");   // 12
+  analysisManager->CreateNtupleIColumn("Left_dE_PMT");  // 13
+  analysisManager->CreateNtupleIColumn("Right_E_PMT");  // 14
+  analysisManager->CreateNtupleIColumn("Right_dE_PMT"); // 15
   
   // Event #
-  analysisManager->CreateNtupleIColumn("Event_ID");     // 24  
+  analysisManager->CreateNtupleIColumn("Event_ID");     // 16  
   
   // Primary Vertex Info
-  analysisManager->CreateNtupleDColumn("PrimaryVertexKEprime");	// 25
-  analysisManager->CreateNtupleDColumn("PrimaryVertexX");	// 26	// Location
-  analysisManager->CreateNtupleDColumn("PrimaryVertexY");	// 27
-  analysisManager->CreateNtupleDColumn("PrimaryVertexZ");	// 28
-  analysisManager->CreateNtupleDColumn("PrimaryVertexTheta");	// 29
-  analysisManager->CreateNtupleDColumn("PrimaryVertexPhi");	// 30
-  analysisManager->CreateNtupleDColumn("PrimaryVertexPX");	// 31	// Polarization
-  analysisManager->CreateNtupleDColumn("PrimaryVertexPY");	// 32
-  analysisManager->CreateNtupleDColumn("PrimaryVertexPZ");	// 33
+  analysisManager->CreateNtupleDColumn("PrimaryVertexKEprime");	// 17
+  analysisManager->CreateNtupleDColumn("PrimaryVertexX");	// 18	// Location
+  analysisManager->CreateNtupleDColumn("PrimaryVertexY");	// 19
+  analysisManager->CreateNtupleDColumn("PrimaryVertexZ");	// 20
+  analysisManager->CreateNtupleDColumn("PrimaryVertexTheta");	// 21
+  analysisManager->CreateNtupleDColumn("PrimaryVertexPhi");	// 22
+  analysisManager->CreateNtupleDColumn("PrimaryVertexPX");	// 23	// Polarization
+  analysisManager->CreateNtupleDColumn("PrimaryVertexPY");	// 24
+  analysisManager->CreateNtupleDColumn("PrimaryVertexPZ");	// 25
 
   // Primary Vertex Dynamics
-  analysisManager->CreateNtupleDColumn("PrimaryCrossSection");	// 34
-  analysisManager->CreateNtupleDColumn("PrimarySherman");	// 35
-  analysisManager->CreateNtupleDColumn("PrimarySpinT");		// 36
-  analysisManager->CreateNtupleDColumn("PrimarySpinU");		// 37
+  analysisManager->CreateNtupleDColumn("PrimaryCrossSection");	// 26
+  analysisManager->CreateNtupleDColumn("PrimarySherman");	// 27
+  analysisManager->CreateNtupleDColumn("PrimarySpinT");		// 28
+  analysisManager->CreateNtupleDColumn("PrimarySpinU");		// 29
 
   /* Dump Plate segments.
   G4int nBeSegments = 20*6;

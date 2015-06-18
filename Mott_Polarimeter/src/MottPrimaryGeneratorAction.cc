@@ -75,7 +75,7 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
 
   // Set default 
   beamEnergy = 5.0*MeV; 	// kinetic energy
-  energySpread = 5e-03*MeV;
+  energySpread = 25.0*keV;
   beamDiameter = 1.0*mm;
 
   // Set default particle to electron
@@ -182,8 +182,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   CalculateNewPol();
 
   //G4cout << ThrowFromUpstream << " " << ThrowAtCollimators << G4endl;
-  //G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta << " " << Phi << " "
-  //       << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
+  G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta/deg << " " << Phi/deg << " "
+         << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
 
   // Primary verted quantitites to store in rootfile
   pEventAction->SetKEPrime(Energy);			// Energy
@@ -305,7 +305,7 @@ G4double MottPrimaryGeneratorAction::InterpolateCrossSection(G4double theta, G4d
   G4double testEnergy;
   if (energy < beamEnergy - 0.1) {
     j_lo = 0;			j_hi = 1;
-    E_lo = beamEnergy - 0.10;	E_hi = beamEnergy -0.05;
+    E_lo = beamEnergy - 0.10;	E_hi = beamEnergy - 0.05;
   } else if (energy > beamEnergy + 0.1) {
     j_lo = 3;			j_hi = 4;
     E_lo = beamEnergy + 0.05;	E_hi = beamEnergy + 0.10;
@@ -324,13 +324,23 @@ G4double MottPrimaryGeneratorAction::InterpolateCrossSection(G4double theta, G4d
   while(ThetaSc[j_lo][i]<theta) i++;
   i_lo = i-1;			i_hi = i;
   theta_lo = ThetaSc[j_lo][i-1];	theta_hi = ThetaSc[j_lo][i];
-   
-  G4double F_11 = CrossSection[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
-  G4double F_12 = CrossSection[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
-  G4double F_21 = CrossSection[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
-  G4double F_22 = CrossSection[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
-  F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );
-  
+
+  if( beamEnergy-0.10<=energy && energy<=beamEnergy+0.10) {   
+    G4double F_11 = CrossSection[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
+    G4double F_12 = CrossSection[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
+    G4double F_21 = CrossSection[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
+    G4double F_22 = CrossSection[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
+    F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );  
+  } else if ( energy < beamEnergy-0.10 ) {
+    G4double G_1 = (CrossSection[j_hi][i_lo]-CrossSection[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_lo) +  CrossSection[j_lo][i_lo];
+    G4double G_2 = (CrossSection[j_hi][i_hi]-CrossSection[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_lo) +  CrossSection[j_lo][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;    
+  } else if ( energy > beamEnergy+0.10 ) {
+    G4double G_1 = (CrossSection[j_hi][i_lo]-CrossSection[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_hi) +  CrossSection[j_hi][i_lo];
+    G4double G_2 = (CrossSection[j_hi][i_hi]-CrossSection[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_hi) +  CrossSection[j_hi][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;
+  }
+
   return F_xy;
 }
 
@@ -373,11 +383,21 @@ G4double MottPrimaryGeneratorAction::InterpolateSherman(G4double theta, G4double
   i_lo = i-1;			i_hi = i;
   theta_lo = ThetaSc[j_lo][i-1];	theta_hi = ThetaSc[j_lo][i];
    
-  G4double F_11 = Sherman[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
-  G4double F_12 = Sherman[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
-  G4double F_21 = Sherman[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
-  G4double F_22 = Sherman[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
-  F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );
+  if( beamEnergy-0.10<=energy && energy<=beamEnergy+0.10) {   
+    G4double F_11 = Sherman[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
+    G4double F_12 = Sherman[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
+    G4double F_21 = Sherman[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
+    G4double F_22 = Sherman[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
+    F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );  
+  } else if ( energy < beamEnergy-0.10 ) {
+    G4double G_1 = (Sherman[j_hi][i_lo]-Sherman[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_lo) +  Sherman[j_lo][i_lo];
+    G4double G_2 = (Sherman[j_hi][i_hi]-Sherman[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_lo) +  Sherman[j_lo][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;    
+  } else if ( energy > beamEnergy+0.10 ) {
+    G4double G_1 = (Sherman[j_hi][i_lo]-Sherman[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_hi) +  Sherman[j_hi][i_lo];
+    G4double G_2 = (Sherman[j_hi][i_hi]-Sherman[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_hi) +  Sherman[j_hi][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;
+  }
 
   //G4cout << "\t\t" << Sherman[j_lo][i_lo] << "\t" <<  Sherman[j_lo][i_hi] << "\t" <<  Sherman[j_hi][i_lo] << "\t" <<  Sherman[j_hi][i_hi] << G4endl;
   //G4cout << "i and j: " << i_lo << " " << i_hi << " " << j_lo << " " << j_hi << G4endl;
@@ -424,11 +444,21 @@ G4double MottPrimaryGeneratorAction::InterpolateT(G4double theta, G4double energ
   i_lo = i-1;				i_hi = i;
   theta_lo = ThetaSc[j_lo][i-1];	theta_hi = ThetaSc[j_lo][i];
    
-  G4double F_11 = SpinT[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
-  G4double F_12 = SpinT[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
-  G4double F_21 = SpinT[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
-  G4double F_22 = SpinT[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
-  F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );
+  if( beamEnergy-0.10<=energy && energy<=beamEnergy+0.10) {   
+    G4double F_11 = SpinT[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
+    G4double F_12 = SpinT[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
+    G4double F_21 = SpinT[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
+    G4double F_22 = SpinT[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
+    F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );  
+  } else if ( energy < beamEnergy-0.10 ) {
+    G4double G_1 = (SpinT[j_hi][i_lo]-SpinT[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_lo) +  SpinT[j_lo][i_lo];
+    G4double G_2 = (SpinT[j_hi][i_hi]-SpinT[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_lo) +  SpinT[j_lo][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;    
+  } else if ( energy > beamEnergy+0.10 ) {
+    G4double G_1 = (SpinT[j_hi][i_lo]-SpinT[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_hi) +  SpinT[j_hi][i_lo];
+    G4double G_2 = (SpinT[j_hi][i_hi]-SpinT[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_hi) +  SpinT[j_hi][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;
+  }
   
   return F_xy;
 }
@@ -472,11 +502,21 @@ G4double MottPrimaryGeneratorAction::InterpolateU(G4double theta, G4double energ
   i_lo = i-1;				i_hi = i;
   theta_lo = ThetaSc[j_lo][i-1];	theta_hi = ThetaSc[j_lo][i];
     
-  G4double F_11 = SpinU[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
-  G4double F_12 = SpinU[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
-  G4double F_21 = SpinU[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
-  G4double F_22 = SpinU[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
-  F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );
+  if( beamEnergy-0.10<=energy && energy<=beamEnergy+0.10) {   
+    G4double F_11 = SpinU[j_lo][i_lo]*std::abs(E_hi-energy)*std::abs(theta_hi-theta);
+    G4double F_12 = SpinU[j_lo][i_hi]*std::abs(E_hi-energy)*std::abs(theta_lo-theta);
+    G4double F_21 = SpinU[j_hi][i_lo]*std::abs(E_lo-energy)*std::abs(theta_hi-theta);
+    G4double F_22 = SpinU[j_hi][i_hi]*std::abs(E_lo-energy)*std::abs(theta_lo-theta);
+    F_xy = (F_11 + F_12 + F_21 + F_22)/( (E_hi - E_lo)*(theta_hi-theta_lo) );  
+  } else if ( energy < beamEnergy-0.10 ) {
+    G4double G_1 = (SpinU[j_hi][i_lo]-SpinU[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_lo) +  SpinU[j_lo][i_lo];
+    G4double G_2 = (SpinU[j_hi][i_hi]-SpinU[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_lo) +  SpinU[j_lo][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;    
+  } else if ( energy > beamEnergy+0.10 ) {
+    G4double G_1 = (SpinU[j_hi][i_lo]-SpinU[j_lo][i_lo])/(E_hi-E_lo)*(energy - E_hi) +  SpinU[j_hi][i_lo];
+    G4double G_2 = (SpinU[j_hi][i_hi]-SpinU[j_lo][i_hi])/(E_hi-E_lo)*(energy - E_hi) +  SpinU[j_hi][i_hi];
+    F_xy = (theta_hi-theta)/(theta_hi-theta_lo)*G_1 + (theta-theta_lo)/(theta_hi-theta_lo)*G_2;
+  }
   
   return F_xy;
 }    
