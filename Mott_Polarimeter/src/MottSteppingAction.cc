@@ -82,7 +82,7 @@ void MottSteppingAction::UserSteppingAction(const G4Step* theStep)
     }
   }
   
-  if(particleType==G4OpticalPhoton::OpticalPhotonDefinition()){
+  if(particleName=="opticalphoton"){
     boundaryStatus=boundary->GetStatus(); 
     if(thePostPoint->GetStepStatus()==fGeomBoundary) {
       switch(boundaryStatus) {

@@ -31,6 +31,7 @@
 
 #include "globals.hh"
 #include "MottPhysicsList.hh"
+#include "MottPhysicsListMessenger.hh"
 
 #include "G4ProcessManager.hh"
 #include "G4ParticleTypes.hh"
@@ -74,6 +75,8 @@
 
 MottPhysicsList::MottPhysicsList():  G4VUserPhysicsList()
 {
+  G4cout << "\tEntering MottPhysicsList::MottPhysicsList()" << G4endl;
+
   theCerenkovProcess           = NULL;
   theScintillationProcess      = NULL;
   theAbsorptionProcess         = NULL;
@@ -81,8 +84,14 @@ MottPhysicsList::MottPhysicsList():  G4VUserPhysicsList()
   //theMieHGScatteringProcess    = NULL;
   theBoundaryProcess           = NULL;
   
+  OpticalPhotonSwitch = 0;
+
+  myMessenger = new MottPhysicsListMessenger(this);
+
   defaultCutValue = 1.0*cm;
-  SetVerboseLevel(1);
+  SetVerboseLevel(0);
+
+  G4cout << "\tLeaving MottPhysicsList::MottPhysicsList()" << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -109,6 +118,8 @@ void MottPhysicsList::ConstructParticle()
 
 void MottPhysicsList::ConstructBosons()
 {
+  G4cout << "\tEntering MottPhysicsList::ConstructBosons()" << G4endl;  
+
   // pseudo-particles
   G4Geantino::GeantinoDefinition();
   G4ChargedGeantino::ChargedGeantinoDefinition();
@@ -117,7 +128,11 @@ void MottPhysicsList::ConstructBosons()
   G4Gamma::GammaDefinition();
   
   // optical photon
-  G4OpticalPhoton::OpticalPhotonDefinition();
+  if(OpticalPhotonSwitch==1)
+    G4OpticalPhoton::OpticalPhotonDefinition();
+
+  G4cout << "\tLeaving MottPhysicsList::ConstructBosons()" << G4endl;  
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -174,12 +189,17 @@ void MottPhysicsList::ConstructBaryons()
 
 void MottPhysicsList::ConstructProcess()
 {
+  G4cout << "\tEntering MottPhysicsList::ConstructProcess()" << G4endl;  
+
   AddTransportation();
   ConstructEM();
   ConstructGeneral();
   // Add Optical Photon Processes
-  ConstructOp();
+  if (OpticalPhotonSwitch == 1)
+    ConstructOp();
   AddStepMax();
+
+  G4cout << "\tLeaving MottPhysicsList::ConstructProcess()" << G4endl;  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -275,6 +295,8 @@ void MottPhysicsList::ConstructGeneral()
 // copied almose verbatim from ExN06.
 void MottPhysicsList::ConstructOp()
 {
+  G4cout << "\tEntering MottPhysicsList::Construct0p()" << G4endl;  
+
   theCerenkovProcess           = new G4Cerenkov("Cerenkov");
   theScintillationProcess      = new G4Scintillation("Scintillation");
   theAbsorptionProcess         = new G4OpAbsorption();

@@ -73,6 +73,11 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   GoldELoss[6.0*MeV] = 35.26*MeV/cm;
   GoldELoss[8.0*MeV] = 40.65*MeV/cm;
 
+  ThetaMin = 0;
+  ThetaMax = pi;
+  PhiMin = 0;
+  PhiMax = 2*pi;  
+
   // Set default 
   beamEnergy = 5.0*MeV; 	// kinetic energy
   energySpread = 25.0*keV;
@@ -146,15 +151,11 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     while (goodThrow==0) { 
       G4double ScatteringAngle = 172.6*deg;					// Average acceptance angle.
       Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	        // Throw from 172.0 to 173.2 degrees
-      G4double quadrantRoll = G4UniformRand();					// Pick a quadrant							
-      if(0.0<=quadrantRoll&&quadrantRoll<0.25) {				// Throw a 5 degree window in phi around each aperature
+      G4double CoinToss = G4UniformRand();					// Pick left or right						
+      if(0.0<=CoinToss&&CoinToss<0.5) {						// Throw a 5 degree window in phi around each aperature
         Phi = 5.0*G4UniformRand()*deg - 2.5*deg;        
-      } else if(0.25<=quadrantRoll&&quadrantRoll<0.5) {
-        Phi = 5.0*G4UniformRand()*deg + 87.5*deg;
-      } else if(0.5<=quadrantRoll&&quadrantRoll<0.75) {
+      } else if(0.5<=CoinToss&&CoinToss<=1.0) {
         Phi = 5.0*G4UniformRand()*deg + 177.5*deg;
-      } else if(0.75<=quadrantRoll&&quadrantRoll<=1.0) {
-        Phi = 5.0*G4UniformRand()*deg + 267.5*deg;
       }
       CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
       S = InterpolateSherman(Theta/deg,Energy/MeV);
@@ -168,8 +169,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }
     }      
     gunDirection.setRThetaPhi(1.0,Theta,Phi);
-  } else {
-    Theta = ThetaMin + (ThetaMax-ThetaMin)*G4UniformRand();
+  } else {									// Throw uniformly across the user specified angular range 
+    Theta = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() - cos(ThetaMax) );
     Phi = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
     CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
     S = InterpolateSherman(Theta/deg,Energy/MeV);
@@ -182,8 +183,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   CalculateNewPol();
 
   //G4cout << ThrowFromUpstream << " " << ThrowAtCollimators << G4endl;
-  G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta/deg << " " << Phi/deg << " "
-         << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
+  //G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta/deg << " " << Phi/deg << " "
+  //       << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
 
   // Primary verted quantitites to store in rootfile
   pEventAction->SetKEPrime(Energy);			// Energy

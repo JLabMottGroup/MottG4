@@ -24,73 +24,55 @@
 // ********************************************************************
 //
 //
-// $Id: MottPhysicsList.hh,v 3.6 2013/08/07 17:44:27 mjmchugh Exp $
+// $Id: MottPhysicsListMessenger.cc,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottPhysicsList_h
-#define MottPhysicsList_h 1
+#include "MottPhysicsList.hh"
+#include "MottPhysicsListMessenger.hh"
 
-#include "G4VUserPhysicsList.hh"
 #include "globals.hh"
-
-class G4Cerenkov;
-class G4Scintillation;
-class G4OpAbsorption;
-//class G4OpRayleigh;
-//class G4OpMieHG;
-class G4OpBoundaryProcess;
-class MottPhysicsListMessenger;
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class MottPhysicsList: public G4VUserPhysicsList
+MottPhysicsListMessenger::MottPhysicsListMessenger(MottPhysicsList* myMPGA)
 {
-  public:
-    MottPhysicsList();
-   ~MottPhysicsList();
 
-    void SetOpticalPhotonSwitch(G4int value) { OpticalPhotonSwitch = value; };
-    G4int GetOpticalPhotonSwitch() {return OpticalPhotonSwitch; };
-   
-  protected:
-    // Construct particle and physics
-    void ConstructParticle();
-    void ConstructProcess();
- 
-    void SetCuts();
-   
-  protected:
-    // these methods Construct particles 
-    void ConstructBosons();
-    void ConstructLeptons();
-    void ConstructMesons();
-    void ConstructBaryons();
+  myPhysicsList = myMPGA;
 
-  protected:
-    // these methods Construct physics processes and register them
-    void ConstructGeneral();
-    void ConstructEM();
-    void ConstructOp();
-    void AddStepMax();
-    
-  private:
+  physicsDir = new G4UIdirectory("/PhysicsList/");
+  physicsDir->SetGuidance("Adjust what physics is portrayed");
 
-    MottPhysicsListMessenger* myMessenger;
+  switchOpticalPhotonsCmd = new G4UIcmdWithAnInteger("/PhysicsList/SwitchOpticalPhotons", this);
+  switchOpticalPhotonsCmd->SetGuidance("Turn On (1) or off (0) Optical photon creation and propogation in the scintillators");
+  switchOpticalPhotonsCmd->SetParameterName("OpticalPhotonSwitch",false);
+  switchOpticalPhotonsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-    // Optical Photon processes
-    G4int OpticalPhotonSwitch;
-    G4Cerenkov*          theCerenkovProcess;
-    G4Scintillation*     theScintillationProcess;
-    G4OpAbsorption*      theAbsorptionProcess;
-    //G4OpRayleigh*        theRayleighScatteringProcess;
-    //G4OpMieHG*           theMieHGScatteringProcess;
-    G4OpBoundaryProcess* theBoundaryProcess;  
-};
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+MottPhysicsListMessenger::~MottPhysicsListMessenger() {
 
- 
+  delete physicsDir;
+  delete switchOpticalPhotonsCmd;
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void MottPhysicsListMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
+
+  if( command == switchOpticalPhotonsCmd ) {
+   
+    myPhysicsList->SetOpticalPhotonSwitch(switchOpticalPhotonsCmd->GetNewIntValue(newValue));
+    
+    G4cout << "Set OpticalPhotonSwitch = " << newValue << G4endl; 
+    
+  }
+  
+}
+

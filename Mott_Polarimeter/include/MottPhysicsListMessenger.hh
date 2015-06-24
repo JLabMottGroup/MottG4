@@ -24,73 +24,38 @@
 // ********************************************************************
 //
 //
-// $Id: MottPhysicsList.hh,v 3.6 2013/08/07 17:44:27 mjmchugh Exp $
+// $Id: MottPhysicsListMessenger.hh,v 1.1 2014/01/16 23:40:03 mjmchugh Exp mjmchugh $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef MottPhysicsList_h
-#define MottPhysicsList_h 1
+#ifndef MottPhysicsListMessenger_h
+#define MottPhysicsListMessenger_h 1
 
-#include "G4VUserPhysicsList.hh"
 #include "globals.hh"
+#include "G4UImessenger.hh"
 
-class G4Cerenkov;
-class G4Scintillation;
-class G4OpAbsorption;
-//class G4OpRayleigh;
-//class G4OpMieHG;
-class G4OpBoundaryProcess;
-class MottPhysicsListMessenger;
+class MottPhysicsList;
+class G4UIdirectory;
+class G4UIcmdWithAnInteger;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class MottPhysicsList: public G4VUserPhysicsList
+class MottPhysicsListMessenger : public G4UImessenger 
 {
-  public:
-    MottPhysicsList();
-   ~MottPhysicsList();
 
-    void SetOpticalPhotonSwitch(G4int value) { OpticalPhotonSwitch = value; };
-    G4int GetOpticalPhotonSwitch() {return OpticalPhotonSwitch; };
+  public: 
+    MottPhysicsListMessenger(MottPhysicsList*);
+   ~MottPhysicsListMessenger();
    
-  protected:
-    // Construct particle and physics
-    void ConstructParticle();
-    void ConstructProcess();
- 
-    void SetCuts();
-   
-  protected:
-    // these methods Construct particles 
-    void ConstructBosons();
-    void ConstructLeptons();
-    void ConstructMesons();
-    void ConstructBaryons();
-
-  protected:
-    // these methods Construct physics processes and register them
-    void ConstructGeneral();
-    void ConstructEM();
-    void ConstructOp();
-    void AddStepMax();
+    void SetNewValue(G4UIcommand*, G4String);
     
   private:
-
-    MottPhysicsListMessenger* myMessenger;
-
-    // Optical Photon processes
-    G4int OpticalPhotonSwitch;
-    G4Cerenkov*          theCerenkovProcess;
-    G4Scintillation*     theScintillationProcess;
-    G4OpAbsorption*      theAbsorptionProcess;
-    //G4OpRayleigh*        theRayleighScatteringProcess;
-    //G4OpMieHG*           theMieHGScatteringProcess;
-    G4OpBoundaryProcess* theBoundaryProcess;  
+  
+    MottPhysicsList* myPhysicsList;
+    
+    // Mott Beam Commands
+    G4UIdirectory* physicsDir;
+    G4UIcmdWithAnInteger* switchOpticalPhotonsCmd;
+    
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-
- 
