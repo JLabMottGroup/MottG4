@@ -35,7 +35,7 @@
 #include "globals.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
-#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -68,17 +68,14 @@ MottPrimaryGeneratorMessenger::MottPrimaryGeneratorMessenger(MottPrimaryGenerato
   primaryDir = new G4UIdirectory("/PrimaryGenerator/");
   primaryDir->SetGuidance("Primary Generator Commands");
   
-  throwFromUpstreamCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowFromUpstream",this);
-  throwFromUpstreamCmd->SetGuidance("Throw an incident beam at the target foil");
-  throwFromUpstreamCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
-  throwAtCollimatorsCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowAtCollimators",this);
-  throwAtCollimatorsCmd->SetGuidance("Throw electrons from target foil at the collimator holes");
-  throwAtCollimatorsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-
-  throwInUserRangeCmd = new G4UIcmdWithoutParameter("/PrimaryGenerator/ThrowInUserRange",this);
-  throwInUserRangeCmd->SetGuidance("Throw electrons from target foil at the collimator holes");
-  throwInUserRangeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  eventTypeCmd = new G4UIcmdWithAnInteger("/PrimaryGenerator/EventType",this);
+  eventTypeCmd->SetGuidance("Choose type of primary event ");
+  eventTypeCmd->SetGuidance(" 0 - Throw from upstream into the target ");
+  eventTypeCmd->SetGuidance(" 1 - Throw single scattered e- at the detectors (default)");
+  eventTypeCmd->SetGuidance(" 2 - Throw double scattered e- at the detectors");
+  eventTypeCmd->SetGuidance(" 3 - Throw single scattered e- into user specified angular range");
+  eventTypeCmd->SetParameterName("EventType", false);
+  eventTypeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   thetaMinCmd = new G4UIcmdWithADoubleAndUnit("/PrimaryGenerator/SetThetaMin", this);
   thetaMinCmd->SetGuidance("Select Minimum Scattering Angle");
@@ -116,6 +113,7 @@ MottPrimaryGeneratorMessenger::~MottPrimaryGeneratorMessenger() {
   delete beamDiameterCmd;
 
   delete primaryDir;
+  delete eventTypeCmd;
   delete thetaMinCmd;
   delete thetaMaxCmd;
   delete phiMinCmd;
@@ -157,28 +155,13 @@ void MottPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String n
   
   }
 
-  if( command == throwFromUpstreamCmd ) {
+  if( command == eventTypeCmd ) {
     
-    myPrimaryGeneratorAction->SetThrowFromUpstream();
-    
-    G4cout << "Set ThrowFromUpstream to true." << G4endl;    
+    myPrimaryGeneratorAction->SetEventType(eventTypeCmd->GetNewIntValue(newValue));
   
-  }
+    G4cout << "Set primary EventType to : "
+           << myPrimaryGeneratorAction->GetEventType() << G4endl;
 
-  if( command == throwAtCollimatorsCmd ) {
-    
-    myPrimaryGeneratorAction->SetThrowAtCollimators();
-    
-    G4cout << "Set ThrowFromUpstream to false, ThrowAtCollimators to true." << G4endl;    
-  
-  }
-
-  if( command == throwInUserRangeCmd ) {
-    
-    myPrimaryGeneratorAction->SetThrowInUserRange();
-    
-    G4cout << "Set ThrowFromUpstream to false, ThrowAtCollimators to false." << G4endl;    
-  
   }
 
   if( command == thetaMinCmd ) {

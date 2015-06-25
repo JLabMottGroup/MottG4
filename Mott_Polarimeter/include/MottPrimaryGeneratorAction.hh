@@ -34,6 +34,7 @@
 
 #include "globals.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4ThreeVector.hh"
 #include <vector>
 #include <map>
 
@@ -74,13 +75,15 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetPhiMax(G4double phi) { PhiMax = phi; };
     G4double GetPhiMax() { return PhiMax; };
 
-    void SetThrowFromUpstream() { ThrowFromUpstream = true; };
-    void SetThrowAtCollimators() { ThrowFromUpstream = false; ThrowAtCollimators = true; };
-    void SetThrowInUserRange() { ThrowFromUpstream = false; ThrowAtCollimators = false; };
+    void SetEventType(G4int type) { EventType = type; }; 
+    G4int GetEventType() {return EventType; };
+    
+    G4double CalculateInstantaneousELoss(G4double E, G4int Z);
+    G4double CalculateTotalELoss(G4double x, G4double E_0, G4int Z);
 
     void ReadDataFiles();
 
-    int CalculateNewPol();
+    G4ThreeVector CalculateNewPol(G4ThreeVector n, G4ThreeVector P, G4double s, G4double t, G4double u);
 
     //Linear interpolation functions for arrays.
     G4double InterpolateCrossSection(G4double,G4double);					
@@ -95,9 +98,6 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     MottPrimaryGeneratorMessenger* myMessenger;
     MottEventAction* pEventAction;
 
-    typedef std::map <G4double, G4double> TargetELoss; 
-    TargetELoss GoldELoss;    
-
     // Target Properties
     G4double TargetZ;		// Atomic Number of Target	
 
@@ -107,8 +107,7 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double beamDiameter;  	// FWHM 
     
     // Primary Event Type
-    G4bool ThrowFromUpstream;
-    G4bool ThrowAtCollimators;
+    G4int EventType;
 
     // Angular Ranges
     G4double ThetaMin;

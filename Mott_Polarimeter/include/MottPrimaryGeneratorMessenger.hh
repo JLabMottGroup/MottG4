@@ -38,7 +38,7 @@
 class MottPrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithoutParameter;
+class G4UIcmdWithAnInteger;
 
 class MottPrimaryGeneratorMessenger : public G4UImessenger 
 {
@@ -61,9 +61,7 @@ class MottPrimaryGeneratorMessenger : public G4UImessenger
     
     // Primary Event Commands
     G4UIdirectory* primaryDir;
-    G4UIcmdWithoutParameter* throwFromUpstreamCmd;
-    G4UIcmdWithoutParameter* throwAtCollimatorsCmd;
-    G4UIcmdWithoutParameter* throwInUserRangeCmd;
+    G4UIcmdWithAnInteger* eventTypeCmd;
     G4UIcmdWithADoubleAndUnit* thetaMinCmd;
     G4UIcmdWithADoubleAndUnit* thetaMaxCmd;
     G4UIcmdWithADoubleAndUnit* phiMinCmd;

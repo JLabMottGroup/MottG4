@@ -63,15 +63,9 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   particleGun = new G4ParticleGun(n_particle);
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
  
-  ThrowFromUpstream = false;
-  ThrowAtCollimators = true;
+  EventType = 1;
 
   TargetZ = 79;
-
-  GoldELoss[3.0*MeV] = 27.02*MeV/cm;
-  GoldELoss[5.0*MeV] = 32.54*MeV/cm;
-  GoldELoss[6.0*MeV] = 35.26*MeV/cm;
-  GoldELoss[8.0*MeV] = 40.65*MeV/cm;
 
   ThetaMin = 0;
   ThetaMax = pi;
@@ -139,37 +133,125 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector preScatteredPolarization = G4ThreeVector(Px1,Py1,Pz1);
 
   // Electron Energy at the scattering vertex (Gaussian minus ~linear ELoss up to the scattering vertex)
-  G4double Energy = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV 
-                    - GoldELoss[beamEnergy]*depth;
+  G4double Energy = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV;
+  Energy -= CalculateTotalELoss(depth, Energy, TargetZ);
 
-  if(ThrowFromUpstream) {
+  if(EventType == 0) {  							// Throw from upstream
+
     Z = -10.0*cm;
     gunPosition = G4ThreeVector(X, Y, Z);
-  } else if(ThrowAtCollimators) {
-    G4int goodThrow = 0;
-    G4double MaxThrow = 1.6*CrossSection[0][589];				// 1.6 times the lowest energy dcs at 172 deg.
-    while (goodThrow==0) { 
-      G4double ScatteringAngle = 172.6*deg;					// Average acceptance angle.
-      Theta = ScatteringAngle - 0.6*deg + 1.2*G4UniformRand()*deg;	        // Throw from 172.0 to 173.2 degrees
-      G4double CoinToss = G4UniformRand();					// Pick left or right						
-      if(0.0<=CoinToss&&CoinToss<0.5) {						// Throw a 5 degree window in phi around each aperature
-        Phi = 5.0*G4UniformRand()*deg - 2.5*deg;        
+
+  } else if(EventType == 1) {							// Throw single scattered electrons
+
+    G4int goodThrow = 0;							// at the collimator
+    G4double MaxThrow = (1.0-1.1*Sherman[0][589])*CrossSection[0][589];
+    while (goodThrow==0) {
+      G4double x_0 = 0.0;
+      G4double CoinToss = G4UniformRand();
+      if(0.0<=CoinToss&&CoinToss<0.5) {						// Pick L or R detector
+        x_0 = - 2.850*25.4*mm/2.0;
       } else if(0.5<=CoinToss&&CoinToss<=1.0) {
-        Phi = 5.0*G4UniformRand()*deg + 177.5*deg;
+        x_0 = 2.850*25.4*mm/2.0;
+      } 
+      G4double y_0 = 0.0*mm;
+      G4double z_0 = -277.597*mm; 						// Front face of collimator
+      G4double R = 0.192*25.4*mm/2.0;						// radius of collimator opening
+      G4double ph = 2*pi*G4UniformRand();
+      G4double u = G4UniformRand() + G4UniformRand();
+      if (u > 1.0) {
+        u = R*(2-u);
+      } else {
+        u = R*u;
       }
+      G4ThreeVector throwTo = G4ThreeVector(u*cos(ph)+x_0, u*sin(ph)+y_0, z_0); // location in collimator opening
+      G4ThreeVector d_1 = throwTo - gunPosition;
+      d_1 = d_1.unit();
+      G4ThreeVector n_1 = gunDirection.cross(d_1);
+      n_1 = n_1.unit();
+      Theta = d_1.theta();
+      Phi = d_1.phi();
+      gunDirection = d_1;
       CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
       S = InterpolateSherman(Theta/deg,Energy/MeV);
       T = InterpolateT(Theta/deg,Energy/MeV);
       U = InterpolateU(Theta/deg,Energy/MeV);
-      CS = CS*(1 + S*cos(Phi));
+      CS = CS*(1 + S*n_1.dot(preScatteredPolarization));
       G4double rejectionThrow = MaxThrow*G4UniformRand();
       if(rejectionThrow<=CS) {
-      	goodThrow = 1;  
-      	//G4cout << cs << "\t" << s << "\t" << t << "\t" << u << "\t" << G4endl;
+      	goodThrow = 1;
+        G4ThreeVector P_2 = CalculateNewPol(n_1,preScatteredPolarization, S, T, U);
+        Px2 = P_2.x();
+        Py2 = P_2.y();
+        Pz2 = P_2.z();
       }
     }      
     gunDirection.setRThetaPhi(1.0,Theta,Phi);
-  } else {									// Throw uniformly across the user specified angular range 
+
+  } else if (EventType == 2) {						// Throw double scattered electrons		
+									// at the collimator
+    G4int goodThrow = 0;
+    G4double MaxThrow = 2.0e-22;
+    while(goodThrow == 0) {
+      // pick point for second scattering (uniform sampling across the target
+      G4double R_2 = G4UniformRand()*0.5*mm;
+      G4double ph_2 = 2*pi*G4UniformRand();
+      G4double z_2 = (G4UniformRand() - 0.5)*TargetLength + myDetector->GetTargetZPosition();
+      G4ThreeVector x_2 = G4ThreeVector(R_2*cos(ph_2)+X, R_2*sin(ph_2)+Y, z_2);
+      // pick point in collimator acceptance to throw to
+      G4double x_0 = 0.0;
+      G4double CoinToss = G4UniformRand();
+      if(0.0<=CoinToss && CoinToss<0.5) {					// Pick L or R detector
+        x_0 = - 2.850*25.4*mm/2.0;
+      } else if(0.5<=CoinToss && CoinToss<=1.0) {
+        x_0 = 2.850*25.4*mm/2.0;
+      } 
+      G4double y_0 = 0.0*mm;
+      G4double z_0 = -277.597*mm; 						// Front face of collimator
+      G4double R = 0.192*25.4*mm/2.0;						// radius of collimator opening
+      G4double ph = 2*pi*G4UniformRand();
+      G4double u = G4UniformRand() + G4UniformRand();
+      if (u > 1.0) {
+        u = R*(2-u);
+      } else {
+        u = R*u;
+      }
+      G4ThreeVector x_3 = G4ThreeVector(u*cos(ph)+x_0, u*sin(ph)+y_0, z_0); // location in collimator opening    
+      // calculate things for first scattering.
+      G4ThreeVector d_1 = x_2 - gunPosition;
+      G4double d_1_length = d_1.mag()/mm;
+      G4ThreeVector n_1 = gunDirection.cross(d_1);
+      n_1 = n_1.unit();
+      Theta = d_1.theta();
+      Phi = d_1.phi();
+      CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
+      S = InterpolateSherman(Theta/deg,Energy/MeV);
+      T = InterpolateT(Theta/deg,Energy/MeV);
+      U = InterpolateU(Theta/deg,Energy/MeV);
+      CS = CS*(1 + S*n_1.dot(preScatteredPolarization));    
+      G4ThreeVector P_2 = CalculateNewPol(n_1,preScatteredPolarization,S,T,U);
+      Px2 = P_2.x();
+      Py2 = P_2.y();
+      Pz2 = P_2.z();
+      // Calculate things for second scattering
+      G4ThreeVector d_2 = x_3-x_2;
+      G4double Theta2 = d_1.angle(d_2);
+      G4ThreeVector n_2 = d_1.cross(d_2);
+      n_2 = n_2.unit();
+      G4double Energy2 = Energy - CalculateTotalELoss(d_1_length, Energy, TargetZ);
+      G4double CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
+      G4double S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
+      //G4double T2 = InterpolateT(Theta2/deg,Energy2/MeV);
+      //G4double U2 = InterpolateU(Theta2/deg,Energy2/MeV);
+      CS2 = CS2*(1 + S2*n_2.dot(P_2));
+      G4double rejectionThrow = MaxThrow*G4UniformRand();
+      if(rejectionThrow<=CS2) {
+        goodThrow = 1;
+        gunDirection = d_2.unit();
+      }
+    }
+
+  } else {					// Throw uniformly across the user specified angular range 
+
     Theta = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() - cos(ThetaMax) );
     Phi = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
     CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
@@ -177,14 +259,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     T = InterpolateT(Theta/deg,Energy/MeV);
     U = InterpolateU(Theta/deg,Energy/MeV);
     CS = CS*(1 + S*cos(Phi));
+
   }
-
-  // Calculate the outgoing electron's polarization (post scattering)
-  CalculateNewPol();
-
-  //G4cout << ThrowFromUpstream << " " << ThrowAtCollimators << G4endl;
-  //G4cout << Energy << " " << X/mm << " " << Y/mm << " " << Z/mm << " " << Theta/deg << " " << Phi/deg << " "
-  //       << Px2 << " " << Py2 << " " << Pz2 << " " << CS << " " << S << " " << T << " " << U << G4endl;
 
   // Primary verted quantitites to store in rootfile
   pEventAction->SetKEPrime(Energy);			// Energy
@@ -201,13 +277,13 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   pEventAction->SetT(T);				// SpinT
   pEventAction->SetU(U);				// SpinU
 
-  //G4cout << energy << "\t" << X << "\t" << Y << "\t" << Z << "\t" << Theta << "\t" << Phi << "\t" << G4endl;
-
   // Set variable gun properties
   particleGun->SetParticleEnergy(Energy);			// scattered electron KE
   particleGun->SetParticlePosition(gunPosition);
   particleGun->SetParticleMomentumDirection(gunDirection); 
   particleGun->GeneratePrimaryVertex(anEvent);
+
+  //G4cout << "\t " << anEvent->GetEventID() << G4endl;
   
   //std::cout << "\tLeaving MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 }
@@ -538,37 +614,46 @@ void MottPrimaryGeneratorAction::SetBeamEnergy(G4double energy) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-int MottPrimaryGeneratorAction::CalculateNewPol() {
+G4ThreeVector MottPrimaryGeneratorAction::CalculateNewPol(G4ThreeVector n, G4ThreeVector P, G4double s, G4double t, G4double u) {
   
   // Define the basis vectors used for the new polarization
   // normal perpendicular to the scattering plane n
-  G4double e1x = -sin(Phi);
-  G4double e1y = cos(Phi);
-  G4double e1z = 0;
-  
-  // n x P 
-  G4double e2x = 0;
-  G4double e2y = 0;
-  G4double e2z = -sin(Phi);
-
-  // n x ( P x n )
-  G4double e3x = sin(Phi)*cos(Phi);
-  G4double e3y = sin(Phi)*sin(Phi);
-  G4double e3z = 0;
+  G4ThreeVector e1 = n;
+  G4ThreeVector e2 = n.cross(P);	// n x P
+  G4ThreeVector e3 = n.cross(-1.0*e2);	// n x ( P x n )
 
   // Normalization of the new polarization vector
-  G4double norm = 1 + cos(Phi)*S;
+  G4double norm = 1 + s*n.dot(P);
   
-  if(norm > 0) {
-    // New Polarization
-    Px2 = ((cos(Phi) + S)*e1x + U*e2x + T*e3x)/norm;
-    Py2 = ((cos(Phi) + S)*e1y + U*e2y + T*e3y)/norm;
-    Pz2 = ((cos(Phi) + S)*e1z + U*e2z + T*e3z)/norm;
-  } else {
-    Px2 = 0;
-    Py2 = 0;
-    Pz2 = 0;
-  }
+  G4ThreeVector P_new = G4ThreeVector(0.0, 0.0, 0.0);
+  P_new = ((n.dot(P) + s)*e1 + u*e2 + t*e3)/norm;
+  
+  return P_new;
+}
 
-  return 0;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4double MottPrimaryGeneratorAction::CalculateInstantaneousELoss(G4double E, G4int Z = 79) {
+  
+  G4double ELoss = 0.0;
+  if (Z==79) {
+    ELoss = 1.888*MeV/mm + 0.2723*E/mm;
+  } else if (Z==47) {
+    ELoss = 1.165*MeV/mm + 0.1142*E/mm; 
+  }
+  return ELoss;
+
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4double MottPrimaryGeneratorAction::CalculateTotalELoss(G4double x, G4double E_0, G4int Z) {
+
+  G4double E = E_0;
+  G4double stepLength = x/10.0;
+  //G4cout << stepLength/mm << " mm";
+  for (G4int i=0; i<10; i++) {
+    E -= stepLength*CalculateInstantaneousELoss(E,Z);
+    //G4cout << "\t" << stepLength*CalculateInstantaneousELoss(E,Z);
+  }
+  G4double DeltaE = E_0 - E; 
+  //G4cout << "\t" << DeltaE << G4endl;
+  return DeltaE;
 }
