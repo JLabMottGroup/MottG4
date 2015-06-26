@@ -106,7 +106,7 @@ MottPrimaryGeneratorAction::~MottPrimaryGeneratorAction()
 // Random aspects must be input before calling GeneratePrimaryVertex();
 void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+  std::cout << "\tEntering MottPrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
 
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
