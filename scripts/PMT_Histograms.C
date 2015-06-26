@@ -8,7 +8,7 @@
 // Compile with:
 //	> g++ -o PMT_Histograms PMT_Histograms.C `root-config --cflags --glibs`
 // Run with
-//	> ./PMT_Histograms
+//	> ./PMT_Histograms FileStem
 
 
 #include <iostream>
@@ -59,33 +59,30 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t MicroAmp = 6.241e15;		// # electrons/second
   Double_t MeVtoJoule = 1.602e-13;	// J/MeV 
   
-  const char* FileDir = "/lustre/expphy/volatile/hallc/qweak/mjmchugh/Mott/Au";
+  //const char* FileDir = "/lustre/expphy/volatile/hallc/qweak/mjmchugh/Mott";
+  const char* FileDir = "/u/home/mjmchugh/MottG4/Mott_Polarimeter/build";
   const char* FileStem = argv[1];
   
   TChain* pChain = new TChain("Mott");
-  for(Int_t i=1; i<10; i++) pChain->Add(Form("%s/%s_%i.root", FileDir, FileStem, i));
+  //for(Int_t i=2; i<3; i++) 
+  pChain->Add(Form("%s/%s_%i.root", FileDir, FileStem, 2));
 
-  TH1F* hLeft_E_PMT = new TH1F("hLeft_E_PMT","hLeft_E_PMT",100,0,8000);
-  TH1F* hRight_E_PMT = new TH1F("hRight_E_PMT","hRight_E_PMT",100,0,8000);
-  TH1F* hUp_E_PMT = new TH1F("hUp_E_PMT","hUp_E_PMT",100,0,8000);
-  TH1F* hDown_E_PMT = new TH1F("hDown_E_PMT","hDown_E_PMT",100,0,8000);
+  TH1F* hLeft_E = new TH1F("hLeft_E","hLeft_E",1000,0,8);
+  TH1F* hRight_E = new TH1F("hRight_E_PMT","hRight_E",1000,0,8);
 
-  Int_t Left_E_PMT, Right_E_PMT, Up_E_PMT, Down_E_PMT;  
+  Double_t Left_E, Right_E;
+  Double_t PrimaryVertexX, PrimaryVertexY, PrimaryVertexZ; 
   Int_t nEntries = pChain->GetEntries();
 
   std::cout << "Total number of hits: " << nEntries << std::endl;
 
-  pChain->SetBranchAddress("Left_E_PMT",&Left_E_PMT);
-  pChain->SetBranchAddress("Right_E_PMT",&Right_E_PMT);
-  pChain->SetBranchAddress("Up_E_PMT",&Up_E_PMT);
-  pChain->SetBranchAddress("Down_E_PMT",&Down_E_PMT);
+  pChain->SetBranchAddress("Left_E",&Left_E);
+  pChain->SetBranchAddress("Right_E",&Right_E);
  
   for(Int_t i=0; i<nEntries; i++) {
     pChain->GetEntry(i);
-    if(Left_E_PMT > 0) hLeft_E_PMT->Fill(Left_E_PMT);
-    if(Right_E_PMT > 0) hRight_E_PMT->Fill(Right_E_PMT);
-    if(Up_E_PMT > 0) hUp_E_PMT->Fill(Up_E_PMT);
-    if(Down_E_PMT > 0) hDown_E_PMT->Fill(Down_E_PMT);
+    if(Left_E > 4.0) hLeft_E->Fill(Left_E);
+    if(Right_E > 4.0) hRight_E->Fill(Right_E);
   }
 
   //gStyle->SetOptFit(1); 	//Make sure fit stats appear
@@ -105,36 +102,29 @@ int main(Int_t argc, Char_t *argv[]) {
   //Fit2->SetLineColor(kBlack);
   //Fit2->SetLineWidth(3);
 
-  TCanvas* c1 = new TCanvas("c1", "E_PMT Detector Histograms", 1000, 1000);
-  c1->Divide(2,2);
+  TCanvas* c1 = new TCanvas("c1", "E_PMT Detector Histograms", 1000, 500);
+  c1->Divide(2,1);
   c1->cd(1);
   //hLeft_E_PMT->Scale(1.0/hLeft_E_PMT->GetEntries());
-  hLeft_E_PMT->GetXaxis()->SetTitle("LEFT_E PEs");
-  hLeft_E_PMT->Draw();
+  hLeft_E->GetXaxis()->SetTitle("LEFT_E");
+  hLeft_E->Draw();
   c1->cd(2);
   //hRight_E_PMT->Scale(1.0/hRight_E_PMT->GetEntries());
-  hRight_E_PMT->GetXaxis()->SetTitle("RIGHT_E PEs");
-  hRight_E_PMT->Draw();
+  hRight_E->GetXaxis()->SetTitle("RIGHT_E");
+  hRight_E->Draw();
   c1->cd(3);
-  //hUp_E_PMT->Scale(1.0/hUp_E_PMT->GetEntries());
-  hUp_E_PMT->GetXaxis()->SetTitle("Up_E PEs");
-  hUp_E_PMT->Draw();
-  c1->cd(4);
-  //hDown_E_PMT->Scale(1.0/hDown_E_PMT->GetEntries());
-  hDown_E_PMT->GetXaxis()->SetTitle("Down_E PEs");
-  hDown_E_PMT->Draw();
   c1->cd();
 
   //Asymmetry calculation
-  Double_t L = hLeft_E_PMT->GetEntries();
-  Double_t R = hRight_E_PMT->GetEntries();
+  Double_t L = hLeft_E->GetEntries();
+  Double_t R = hRight_E->GetEntries();
   Double_t A = (L - R)/(L + R);
   Double_t dA = TMath::Abs(A)*TMath::Sqrt((L+R)*(1.0/((L-R)*(L-R)) + 1.0/((L+R)*(L+R))));
 
   std::cout << L << "\t" << R << "\t" << A << "\t" << dA << std::endl;
   
   // Save the plots as a ROOTfile to make things better!
-  TFile* plotFile = new TFile(Form("%s_EDetectorPMTPlots.root", FileStem), "RECREATE");
+  TFile* plotFile = new TFile(Form("%s_EDetectorPlots.root", FileStem), "RECREATE");
   c1->Write();
   plotFile->Close();
 

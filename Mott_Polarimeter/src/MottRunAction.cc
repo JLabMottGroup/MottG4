@@ -149,6 +149,23 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   analysisManager->CreateNtupleDColumn("PrimarySpinT");		// 28
   analysisManager->CreateNtupleDColumn("PrimarySpinU");		// 29
 
+  // Secondary Vertex Info
+  analysisManager->CreateNtupleDColumn("SecondaryVertexKEprime");	// 30
+  analysisManager->CreateNtupleDColumn("SecondaryVertexX");		// 31	// Location
+  analysisManager->CreateNtupleDColumn("SecondaryVertexY");		// 32
+  analysisManager->CreateNtupleDColumn("SecondaryVertexZ");		// 33
+  analysisManager->CreateNtupleDColumn("SecondaryVertexTheta");		// 34
+  analysisManager->CreateNtupleDColumn("SecondaryVertexPhi");		// 35
+  analysisManager->CreateNtupleDColumn("SecondaryVertexPX");		// 36	// Polarization
+  analysisManager->CreateNtupleDColumn("SecondaryVertexPY");		// 37
+  analysisManager->CreateNtupleDColumn("SecondaryVertexPZ");		// 38
+
+  // Secondary Vertex Dynamics
+  analysisManager->CreateNtupleDColumn("SecondaryCrossSection");	// 39
+  analysisManager->CreateNtupleDColumn("SecondarySherman");		// 40
+  analysisManager->CreateNtupleDColumn("SecondarySpinT");		// 41
+  analysisManager->CreateNtupleDColumn("SecondarySpinU");		// 42
+
   /* Dump Plate segments.
   G4int nBeSegments = 20*6;
   G4int nCuSegments = 20*18;

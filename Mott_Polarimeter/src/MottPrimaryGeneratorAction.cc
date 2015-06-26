@@ -111,92 +111,94 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   pEventAction = (MottEventAction*) G4RunManager::GetRunManager()->GetUserEventAction();
   
   // Initialize all variables to 0
-  X = 0;	Y = 0;		Z = 0;
   Px1 = 0; 	Py1 = 0;	Pz1 = 0;
+  X1 = 0;	Y1 = 0;		Z1 = 0;
+  Theta1 = 0;	Phi1 = 0;	Energy1 = 0;
+  CS1 = 0; 	S1 = 0; 	T1 = 0; 	U1 = 0;
   Px2 = 0; 	Py2 = 0;	Pz2 = 0;
-  Theta = 0;	Phi = 0;	Energy = 0;
-  CS = 0; 	S = 0; 		T = 0; 		U = 0;
-
+  X2 = 0;	Y2 = 0;		Z2 = 0;
+  Theta2 = 0;	Phi2 = 0;	Energy2 = 0;
+  CS2 = 0; 	S2 = 0; 	T2 = 0; 	U2 = 0;
+  
   // Gausian beam profile.  
   G4double TargetLength = myDetector->GetTargetFullLength();
   G4double sigma = beamDiameter/(2.354820045*mm);
-  X = G4RandGauss::shoot(0.0,sigma)*mm;
-  Y = G4RandGauss::shoot(0.0,sigma)*mm;
+  X1 = G4RandGauss::shoot(0.0,sigma)*mm;
+  Y1 = G4RandGauss::shoot(0.0,sigma)*mm;
   G4double depth = G4UniformRand()*TargetLength;
-  Z = depth - 0.5*TargetLength + myDetector->GetTargetZPosition();
-  
-  G4ThreeVector gunPosition = G4ThreeVector(X,Y,Z);
+  Z1 = depth - 0.5*TargetLength + myDetector->GetTargetZPosition();
+  G4ThreeVector gunPosition = G4ThreeVector(X1,Y1,Z1);
   G4ThreeVector gunDirection = G4ThreeVector(0.0,0.0,1.0);
   
   // Incident electron's polarization set here
   G4double Py1 = 1.0;
-  G4ThreeVector preScatteredPolarization = G4ThreeVector(Px1,Py1,Pz1);
+  G4ThreeVector P_1 = G4ThreeVector(Px1,Py1,Pz1);
 
   // Electron Energy at the scattering vertex (Gaussian minus ~linear ELoss up to the scattering vertex)
-  G4double Energy = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV;
-  Energy -= CalculateTotalELoss(depth, Energy, TargetZ);
+  Energy1 = G4RandGauss::shoot(beamEnergy/(1.0*MeV), energySpread/(1.0*MeV))*MeV;
+  Energy1 -= CalculateTotalELoss(depth, Energy1, TargetZ);
+  G4double Energy = 0;
 
   if(EventType == 0) {  							// Throw from upstream
 
-    Z = -10.0*cm;
-    gunPosition = G4ThreeVector(X, Y, Z);
+    Z1 = -10.0*cm;
+    gunPosition = G4ThreeVector(X1, Y1, Z1);
 
   } else if(EventType == 1) {							// Throw single scattered electrons
 
-    G4int goodThrow = 0;							// at the collimator
-    G4double MaxThrow = (1.0-1.1*Sherman[0][589])*CrossSection[0][589];
+    G4int goodThrow = 0;
+    G4double MaxThrow = 1.0e-25;
     while (goodThrow==0) {
       G4double x_0 = 0.0;
+      G4double y_0 = 0.0*mm;
+      G4double z_0 = -277.597*mm; 						// Front face of collimator
       G4double CoinToss = G4UniformRand();
       if(0.0<=CoinToss&&CoinToss<0.5) {						// Pick L or R detector
         x_0 = - 2.850*25.4*mm/2.0;
       } else if(0.5<=CoinToss&&CoinToss<=1.0) {
         x_0 = 2.850*25.4*mm/2.0;
       } 
-      G4double y_0 = 0.0*mm;
-      G4double z_0 = -277.597*mm; 						// Front face of collimator
       G4double R = 0.192*25.4*mm/2.0;						// radius of collimator opening
       G4double ph = 2*pi*G4UniformRand();
-      G4double u = G4UniformRand() + G4UniformRand();
-      if (u > 1.0) {
-        u = R*(2-u);
-      } else {
-        u = R*u;
-      }
+      G4double u = R*(G4UniformRand() + G4UniformRand());
+      if (u > R) u = 2*R-u;
       G4ThreeVector throwTo = G4ThreeVector(u*cos(ph)+x_0, u*sin(ph)+y_0, z_0); // location in collimator opening
       G4ThreeVector d_1 = throwTo - gunPosition;
       d_1 = d_1.unit();
       G4ThreeVector n_1 = gunDirection.cross(d_1);
       n_1 = n_1.unit();
-      Theta = d_1.theta();
-      Phi = d_1.phi();
-      gunDirection = d_1;
-      CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
-      S = InterpolateSherman(Theta/deg,Energy/MeV);
-      T = InterpolateT(Theta/deg,Energy/MeV);
-      U = InterpolateU(Theta/deg,Energy/MeV);
-      CS = CS*(1 + S*n_1.dot(preScatteredPolarization));
+      Theta1 = d_1.theta();
+      Phi1 = d_1.phi();
+      CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+      S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+      T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+      U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+      CS1 = CS1*(1 + S1*n_1.dot(P_1));
       G4double rejectionThrow = MaxThrow*G4UniformRand();
-      if(rejectionThrow<=CS) {
+      if(rejectionThrow<=CS1) {
       	goodThrow = 1;
-        G4ThreeVector P_2 = CalculateNewPol(n_1,preScatteredPolarization, S, T, U);
+        G4ThreeVector P_2 = CalculateNewPol(n_1,P_1, S1, T1, U1);
         Px2 = P_2.x();
         Py2 = P_2.y();
         Pz2 = P_2.z();
+        Energy = Energy1;
       }
     }      
-    gunDirection.setRThetaPhi(1.0,Theta,Phi);
+    gunDirection.setRThetaPhi(1.0, Theta1, Phi1);
 
   } else if (EventType == 2) {						// Throw double scattered electrons		
 									// at the collimator
     G4int goodThrow = 0;
-    G4double MaxThrow = 2.0e-22;
+    G4double MaxThrow = 2.0e-46;
     while(goodThrow == 0) {
-      // pick point for second scattering (uniform sampling across the target
-      G4double R_2 = G4UniformRand()*0.5*mm;
+      // Kinematic Considerations
+      // Pick point for second scattering (within a disk within a given radius of the first scattering)
+      G4double R_2 = G4UniformRand()*0.157*mm;
       G4double ph_2 = 2*pi*G4UniformRand();
-      G4double z_2 = (G4UniformRand() - 0.5)*TargetLength + myDetector->GetTargetZPosition();
-      G4ThreeVector x_2 = G4ThreeVector(R_2*cos(ph_2)+X, R_2*sin(ph_2)+Y, z_2);
+      X2 = R_2*cos(ph_2)+X1;
+      Y2 = R_2*sin(ph_2)+Y1;
+      Z2 = (G4UniformRand() - 0.5)*TargetLength + myDetector->GetTargetZPosition();
+      G4ThreeVector x_2 = G4ThreeVector(X2, Y2, Z2);
       // pick point in collimator acceptance to throw to
       G4double x_0 = 0.0;
       G4double CoinToss = G4UniformRand();
@@ -221,14 +223,14 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double d_1_length = d_1.mag()/mm;
       G4ThreeVector n_1 = gunDirection.cross(d_1);
       n_1 = n_1.unit();
-      Theta = d_1.theta();
-      Phi = d_1.phi();
-      CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
-      S = InterpolateSherman(Theta/deg,Energy/MeV);
-      T = InterpolateT(Theta/deg,Energy/MeV);
-      U = InterpolateU(Theta/deg,Energy/MeV);
-      CS = CS*(1 + S*n_1.dot(preScatteredPolarization));    
-      G4ThreeVector P_2 = CalculateNewPol(n_1,preScatteredPolarization,S,T,U);
+      Theta1 = d_1.theta();
+      Phi1 = d_1.phi();
+      G4double CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+      G4double S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+      G4double T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+      G4double U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+      CS1 = CS1*(1 + S1*n_1.dot(P_1));    
+      G4ThreeVector P_2 = CalculateNewPol(n_1,P_1,S1,T1,U1);
       Px2 = P_2.x();
       Py2 = P_2.y();
       Pz2 = P_2.z();
@@ -237,45 +239,61 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double Theta2 = d_1.angle(d_2);
       G4ThreeVector n_2 = d_1.cross(d_2);
       n_2 = n_2.unit();
-      G4double Energy2 = Energy - CalculateTotalELoss(d_1_length, Energy, TargetZ);
+      G4double Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
       G4double CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
       G4double S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
-      //G4double T2 = InterpolateT(Theta2/deg,Energy2/MeV);
-      //G4double U2 = InterpolateU(Theta2/deg,Energy2/MeV);
+      G4double T2 = InterpolateT(Theta2/deg,Energy2/MeV);
+      G4double U2 = InterpolateU(Theta2/deg,Energy2/MeV);
       CS2 = CS2*(1 + S2*n_2.dot(P_2));
+      G4double CS = CS2*CS1;
       G4double rejectionThrow = MaxThrow*G4UniformRand();
-      if(rejectionThrow<=CS2) {
+      if(rejectionThrow<=CS) {
         goodThrow = 1;
         gunDirection = d_2.unit();
+        Energy = Energy2;
       }
     }
 
   } else {					// Throw uniformly across the user specified angular range 
 
-    Theta = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() - cos(ThetaMax) );
-    Phi = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
-    CS = InterpolateCrossSection(Theta/deg,Energy/MeV);
-    S = InterpolateSherman(Theta/deg,Energy/MeV);
-    T = InterpolateT(Theta/deg,Energy/MeV);
-    U = InterpolateU(Theta/deg,Energy/MeV);
-    CS = CS*(1 + S*cos(Phi));
+    Theta1 = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() - cos(ThetaMax) );
+    Phi1 = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
+    CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+    S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+    T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+    U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+    CS1 = CS1*(1 + S1*cos(Phi1));
 
   }
 
-  // Primary verted quantitites to store in rootfile
-  pEventAction->SetKEPrime(Energy);			// Energy
-  pEventAction->SetXPos(X);				// location
-  pEventAction->SetYPos(Y);
-  pEventAction->SetZPos(Z);
-  pEventAction->SetTheta(Theta);			// Scattering angle
-  pEventAction->SetPhi(Phi);  				// Azimuthal angle
-  pEventAction->SetXPol(Px2);				// Outgoing Polarization
-  pEventAction->SetYPol(Py2);
-  pEventAction->SetZPol(Pz2);
-  pEventAction->SetCS(CS);				// Differential Cross Section
-  pEventAction->SetS(S);				// Sherman Function 
-  pEventAction->SetT(T);				// SpinT
-  pEventAction->SetU(U);				// SpinU
+  // Primary vertex quantitites to store in rootfile
+  pEventAction->SetKEPrime(Energy1, 0);			// Energy
+  pEventAction->SetXPos(X1, 0);				// location
+  pEventAction->SetYPos(Y1, 0);
+  pEventAction->SetZPos(Z1, 0);
+  pEventAction->SetTheta(Theta1, 0);			// Scattering angle
+  pEventAction->SetPhi(Phi1, 0);  			// Azimuthal angle
+  pEventAction->SetXPol(Px1, 0);			// Incoming Polarization
+  pEventAction->SetYPol(Py1, 0);
+  pEventAction->SetZPol(Pz1, 0);
+  pEventAction->SetCS(CS1, 0);				// Differential Cross Section
+  pEventAction->SetS(S1, 0);				// Sherman Function 
+  pEventAction->SetT(T1, 0);				// SpinT
+  pEventAction->SetU(U1, 0);				// SpinU
+  // Secondary scattering info
+  pEventAction->SetKEPrime(Energy2, 1);			// Energy
+  pEventAction->SetXPos(X2, 1);				// location
+  pEventAction->SetYPos(Y2, 1);
+  pEventAction->SetZPos(Z2, 1);
+  pEventAction->SetTheta(Theta2, 1);			// Scattering angle
+  pEventAction->SetPhi(Phi2, 1);  			// Azimuthal angle
+  pEventAction->SetXPol(Px2, 1);			// Incoming Polarization
+  pEventAction->SetYPol(Py2, 1);
+  pEventAction->SetZPol(Pz2, 1);
+  pEventAction->SetCS(CS2, 1);				// Differential Cross Section
+  pEventAction->SetS(S2, 1);				// Sherman Function 
+  pEventAction->SetT(T2, 1);				// SpinT
+  pEventAction->SetU(U2, 1);				// SpinU
 
   // Set variable gun properties
   particleGun->SetParticleEnergy(Energy);			// scattered electron KE

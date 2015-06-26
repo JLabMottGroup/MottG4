@@ -186,22 +186,39 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     // Event_ID    
     analysisManager->FillNtupleIColumn(16, event_id);
     
-    // Vertex Info
-    analysisManager->FillNtupleDColumn(17, KEPrime/MeV);
-    analysisManager->FillNtupleDColumn(18, XPos/mm);
-    analysisManager->FillNtupleDColumn(19, YPos/mm);
-    analysisManager->FillNtupleDColumn(20, ZPos/mm);
-    analysisManager->FillNtupleDColumn(21, Theta/deg);
-    analysisManager->FillNtupleDColumn(22, Phi/deg);
-    analysisManager->FillNtupleDColumn(23, XPol);	
-    analysisManager->FillNtupleDColumn(24, YPol);
-    analysisManager->FillNtupleDColumn(25, ZPol);
+    // Primary Vertex Info
+    analysisManager->FillNtupleDColumn(17, KEPrime[1]/MeV);
+    analysisManager->FillNtupleDColumn(18, XPos[1]/mm);
+    analysisManager->FillNtupleDColumn(19, YPos[1]/mm);
+    analysisManager->FillNtupleDColumn(20, ZPos[1]/mm);
+    analysisManager->FillNtupleDColumn(21, Theta[1]/deg);
+    analysisManager->FillNtupleDColumn(22, Phi[1]/deg);
+    analysisManager->FillNtupleDColumn(23, XPol[1]);	
+    analysisManager->FillNtupleDColumn(24, YPol[1]);
+    analysisManager->FillNtupleDColumn(25, ZPol[1]);
 
     // Primary Vertex Dynamics
-    analysisManager->FillNtupleDColumn(26, CS);
-    analysisManager->FillNtupleDColumn(27, S);
-    analysisManager->FillNtupleDColumn(28, T);
-    analysisManager->FillNtupleDColumn(29, U);
+    analysisManager->FillNtupleDColumn(26, CS[1]);
+    analysisManager->FillNtupleDColumn(27, S[1]);
+    analysisManager->FillNtupleDColumn(28, T[1]);
+    analysisManager->FillNtupleDColumn(29, U[1]);
+
+    // Primary Vertex Info
+    analysisManager->FillNtupleDColumn(30, KEPrime[2]/MeV);
+    analysisManager->FillNtupleDColumn(31, XPos[2]/mm);
+    analysisManager->FillNtupleDColumn(32, YPos[2]/mm);
+    analysisManager->FillNtupleDColumn(33, ZPos[2]/mm);
+    analysisManager->FillNtupleDColumn(34, Theta[2]/deg);
+    analysisManager->FillNtupleDColumn(35, Phi[2]/deg);
+    analysisManager->FillNtupleDColumn(36, XPol[2]);	
+    analysisManager->FillNtupleDColumn(37, YPol[2]);
+    analysisManager->FillNtupleDColumn(38, ZPol[2]);
+
+    // Primary Vertex Dynamics
+    analysisManager->FillNtupleDColumn(39, CS[2]);
+    analysisManager->FillNtupleDColumn(40, S[2]);
+    analysisManager->FillNtupleDColumn(41, T[2]);
+    analysisManager->FillNtupleDColumn(42, U[2]);
 
     /* Be Dump Plate
     for(G4int i=0; i<6*20; i++) {

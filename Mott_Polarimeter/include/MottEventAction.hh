@@ -75,32 +75,32 @@ class MottEventAction : public G4UserEventAction
     G4int GetndEPE(G4int i) { return NdEPE[i]; };
 
     // Primary Vertex Set()/Get()
-    inline void SetKEPrime(G4double KE) { KEPrime = KE; };
-    G4double GetKEPrime() { return KEPrime; };
-    inline void SetXPos(G4double X) { XPos = X; };
-    G4double GetXPos() { return XPos; };
-    inline void SetYPos(G4double Y) { YPos = Y; };
-    G4double GetYPos() { return YPos; };
-    inline void SetZPos(G4double Z) { ZPos = Z; };
-    G4double GetZPos() { return ZPos; };
-    inline void SetTheta(G4double theta) { Theta = theta; };
-    G4double GetTheta() { return Theta; };
-    inline void SetPhi(G4double phi) { Phi = phi; };
-    G4double GetPhi() { return Phi; };
-    inline void SetXPol(G4double X) { XPol = X; };
-    G4double GetXPol() { return XPol; };
-    inline void SetYPol(G4double Y) { YPol = Y; };
-    G4double GetYPol() { return YPol; };
-    inline void SetZPol(G4double Z) { ZPol = Z; };
-    G4double GetZPol() { return ZPol; };
-    inline void SetCS(G4double cs) { CS = cs; };
-    G4double GetCS() { return CS; };
-    inline void SetS(G4double s) { S = s; };
-    G4double GetS() { return S; };
-    inline void SetT(G4double t) { T = t; };
-    G4double GetT() { return T; };
-    inline void SetU(G4double u) { U = u; };
-    G4double GetU() { return U; };
+    inline void SetKEPrime(G4double KE, G4int i) { KEPrime[i] = KE; };
+    G4double GetKEPrime(G4int i) { return KEPrime[i]; };
+    inline void SetXPos(G4double X, G4int i) { XPos[i] = X; };
+    G4double GetXPos(G4int i) { return XPos[i]; };
+    inline void SetYPos(G4double Y, G4int i) { YPos[i] = Y; };
+    G4double GetYPos(G4int i) { return YPos[i]; };
+    inline void SetZPos(G4double Z, G4int i) { ZPos[i] = Z; };
+    G4double GetZPos(G4int i) { return ZPos[i]; };
+    inline void SetTheta(G4double theta, G4int i) { Theta[i] = theta; };
+    G4double GetTheta(G4int i) { return Theta[i]; };
+    inline void SetPhi(G4double phi, G4int i) { Phi[i] = phi; };
+    G4double GetPhi(G4int i) { return Phi[i]; };
+    inline void SetXPol(G4double X, G4int i) { XPol[i] = X; };
+    G4double GetXPol(G4int i) { return XPol[i]; };
+    inline void SetYPol(G4double Y, G4int i) { YPol[i] = Y; };
+    G4double GetYPol(G4int i) { return YPol[i]; };
+    inline void SetZPol(G4double Z, G4int i) { ZPol[i] = Z; };
+    G4double GetZPol(G4int i) { return ZPol[i]; };
+    inline void SetCS(G4double cs, G4int i) { CS[i] = cs; };
+    G4double GetCS(G4int i) { return CS[i]; };
+    inline void SetS(G4double s, G4int i) { S[i] = s; };
+    G4double GetS(G4int i) { return S[i]; };
+    inline void SetT(G4double t, G4int i) { T[i] = t; };
+    G4double GetT(G4int i) { return T[i]; };
+    inline void SetU(G4double u, G4int i) { U[i] = u; };
+    G4double GetU(G4int i) { return U[i]; };
 
     void SetStoreAll(G4int value = 1) { StoreAll = value; };
 
@@ -122,21 +122,21 @@ class MottEventAction : public G4UserEventAction
     G4int NdEPE[4];     
 
     // Primary Vertex
-    G4double KEPrime;
-    G4double XPos;	// Scattering Vertex location
-    G4double YPos;
-    G4double ZPos;
-    G4double Theta;
-    G4double Phi; 
-    G4double XPol;	// New Polarization vector
-    G4double YPol;
-    G4double ZPol;
+    G4double KEPrime[2];
+    G4double XPos[2];	// Scattering Vertex location
+    G4double YPos[2];
+    G4double ZPos[2];
+    G4double Theta[2];
+    G4double Phi[2]; 
+    G4double XPol[2];	// New Polarization vector
+    G4double YPol[2];
+    G4double ZPol[2];
 
     // Dynamic Variables
-    G4double CS;
-    G4double S;
-    G4double T;
-    G4double U;
+    G4double CS[2];
+    G4double S[2];
+    G4double T[2];
+    G4double U[2];
 
     // Dump "Detectors"
     //G4double BeEnergyDeposited[6*20];

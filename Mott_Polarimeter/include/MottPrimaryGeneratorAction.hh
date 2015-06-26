@@ -122,22 +122,32 @@ class MottPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     std::vector < std::vector <G4double> > Sherman;
 
     //Scattering vertex quantities
-    G4double X;				// Position
-    G4double Y;	
-    G4double Z;
+    G4double X1;			// Position of frist scattering
+    G4double Y1;
+    G4double Z1;
+    G4double X2;			// Position of second scattering
+    G4double Y2;
+    G4double Z2;
     G4double Px1;			// Incoming polarization
     G4double Py1;
     G4double Pz1;
-    G4double Px2;			// Outgoing polarization
+    G4double Px2;			// polarization after first scattering
     G4double Py2;
     G4double Pz2;
-    G4double Theta;			// Scattering Angle
-    G4double Phi;
-    G4double Energy;			// Energy at the vertex
-    G4double CS;			// Cross Section
-    G4double S;				// Sherman Function
-    G4double T;				// Spin T
-    G4double U;				// Spin U
+    G4double Theta1;			// First Scattering Angle
+    G4double Phi1; 			// First Scattering Azimuthal Angle
+    G4double Energy1;			// Energy at the first vertex
+    G4double CS1;			// First Scattering Cross Section 
+    G4double S1;			// First Scattering Sherman Function
+    G4double T1;			// First Scattering Spin T
+    G4double U1;			// First Scattering Spin U
+    G4double Theta2;			// Second Scattering Angle
+    G4double Phi2; 			// Second Scattering Azimuthal Angle
+    G4double Energy2;			// Energy at the first vertex
+    G4double CS2;			// Second Scattering Cross Section 
+    G4double S2;			// Second Scattering Sherman Function
+    G4double T2;			// Second Scattering Spin T
+    G4double U2;			// Second Scattering Spin U
 
 };
 
