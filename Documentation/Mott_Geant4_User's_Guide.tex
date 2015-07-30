@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{layout}
+\usepackage{gensymb}
+\usepackage{caption} 
+\usepackage{subcaption}
+
+%Paper formatting stuff
+\RequirePackage[letterpaper]{geometry}	%USLetter = standad paper.
+\textheight = 615pt 
+\textwidth = 470pt
+\oddsidemargin = 0pt
+\marginparwidth = 60pt
+\marginparsep = 12pt
+\marginparpush = 0pt %Not shown
+\topmargin = 0pt
+\headheight = 0pt
+\headsep = 0pt 
+\footskip = 36pt
+\pagestyle{plain}
+
+\title{\textbf{Jlab MeV Mott Polarimeter \texttt{GEANT4} Simulation User's Guide}}
+\author{Martin McHugh\\
+		The George Washington University\\
+		mjmchugh@jlab.org}
+\date{2015-07-29}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The purpose of this writing is to guide users of the GEANT4 Simulation of the Jlab MeV Mott Polarimeter. This simulation has numerous functions and abilities which are described in some detail within. Additionally, there is discussion of the physics of interest to the Mott Polarimeter and it's implementation in the simulation code. 
+\end{abstract}
+
+\section*{Interactive and Macro User Commands}
+This section details the various commands that the user can run in either interactive or batch (macro driven) modes to access the different functionality of the simulation. Briefly, they are:
+\begin{itemize}
+ \item \texttt{/Target/SetTargetLength}: Sets the target thickness along the beam-axis. Command requires a double and a unit (length). Simulation default is 1 $\mu$m.
+ \item \texttt{/Target/TargetIn}: Puts the target-center at the nominal physical position. This command is not necessary for most simulations as the target foil already begins in it's physical location unless moved.
+ \item \texttt{/Target/TargetOut}: Moves the target-center to the location ( 0, 1 m , -3.8978 mm), well outside of the scattering chamber. Useful for seeing what happens in the dump. 
+ \item \texttt{/Target/SetTargetMaterial}: Choose Silver or Gold for the target material. Command requires the user to enter either "Au" or "Ag."
+ \item \texttt{/Stepping/stepMax}: Sets the maximum step length of a particle track if it does not encounter a new volume or undergo some process. The default value is 1/2 the length of the world volume. Decreasing the step size is not recommended for simulations with large numbers of events as it can increase computing time dramatically. 
+ \item \texttt{/Beam/SetBeamEnergy}: Set the nominal kinetic energy of the beam. Due to the use of data tables for Mott scattering in the primary generator the value selected should be one of the following, (3 MeV, 5 MeV, 6 Mev, 8 MeV ).
+ \item \texttt{/Beam/SetEnergySpread}: Sets the standard deviation of the energy about the central value. Command requires a double and a unit (energy). Simulation default is 25 keV. 
+ \item \texttt{/Beam/SetBeamDiameter}: Sets the FWHM value for the circular beam profile. Command requires a double and a unit (length). Simulation default is 1.0 mm. 
+ \item \texttt{/PrimaryGenerator/ThrowFromUpstream}: Throws the beam towards the target from $z = -10$ cm.
+ \item \texttt{/PrimaryGenerator/ThrowAtCollimators}: This setting throws the beam from the target in four slender cones towards the four collimator holes. The electrons are generated including effects from energy loss in the target and are thrown in proportion with the appropriate single Mott scattering physics for the target in place. \textbf{This is the simulation default.}
+ \item \texttt{/PrimaryGenerator/ThrowInUserRange}: Throws uniformly in the solid angle described by the user input \texttt{ThetaMin, ThetaMax, PhiMin} and \texttt{PhiMax}.
+ \item \texttt{/PrimaryGenerator/SetThetaMin}: Defines the minimum scattering angle. Must be a double with a unit (angle) between 0 and $\pi$ radians.
+ \item \texttt{/PrimaryGenerator/SetThetaMax}: Defines the maximum scattering angle. Must be a double with a unit (angle) between 0 and $\pi$ radians.
+ \item \texttt{/PrimaryGenerator/SetPhiMin}: Defines the minimum azimuthal angle. Must be a double with a unit (angle) between 0 and $2\pi$ radians.
+ \item \texttt{/PrimaryGenerator/SetPhiMax}: Defines the maximum azimuthal angle. Must be a double with a unit (angle) between 0 and $2\pi$ radians.
+ \item \texttt{/Analysis/RootFileName}: Takes a string of the form \texttt{/path/to/rootfile\_name.root} and writes the output \texttt{ROOT}file to that location.
+ \item \texttt{/EventAction/StoreAllEvents}: User inputs 0 - (simulation default) to store only those events which hit one of the eight detector scintillators, or 1 - to store all events regardless of detector hits.
+\end{itemize}
+\pagebreak
+
+\section*{Simulation Outputs}
+The simulation has two primary outputs. The first, to command line, can be piped or manipulated in the typical fashion, this typically only includes standard GEANT4 information and errors and warnings. The second and more useful output is a \texttt{ROOT}file which includes all of the physics information of interest and detector responses for each event. The output \texttt{ROOT}file has the following leaves:
+\begin{itemize}
+ \item \texttt{Up\_E}: Energy [MeV] deposited in the UP E detector.
+ \item \texttt{Up\_dE}: Energy [MeV] deposited in the UP $\Delta$E detector.
+ \item \texttt{Down\_E}: Energy [MeV] deposited in the DOWN E detector.
+ \item \texttt{Down\_dE}: Energy [MeV] deposited in the DOWN $\Delta$E detector.
+ \item \texttt{Left\_E}: Energy [MeV] deposited in the LEFT E detector.
+ \item \texttt{Left\_dE}: Energy [MeV] deposited in the LEFT $\Delta$E detector.
+ \item \texttt{Right\_E}: Energy [MeV] deposited in the RIGHT E detector.
+ \item \texttt{Right\_dE}: Energy [MeV] deposited in the RIGHT $\Delta$E detector.
+ \item \texttt{Up\_E\_PMT}: Photo-electrons deposited in the UP E detector PMT.
+ \item \texttt{Up\_dE\_PMT}: Photo-electrons deposited in the UP $\Delta$E detector PMT.
+ \item \texttt{Down\_E\_PMT}: Photo-electrons deposited in the DOWN E detector PMT.
+ \item \texttt{Down\_dE\_PMT}: Photo-electrons deposited in the DOWN $\Delta$E detector PMT.
+ \item \texttt{Left\_E\_PMT}: Photo-electrons deposited in the LEFT E detector PMT.
+ \item \texttt{Left\_dE\_PMT}: Photo-electrons deposited in the LEFT $\Delta$E detector PMT.
+ \item \texttt{Right\_E\_PMT}: Photo-electrons deposited in the RIGHT E detector PMT.
+ \item \texttt{Right\_dE\_PMT}: Photo-electrons deposited in the RIGHT $\Delta$E detector PMT.
+ \item \texttt{Event\_ID}: Simulation event number.
+ \item \texttt{PrimaryVertexKEprime}: Kinetic energy [MeV] of the primary electron as generated.
+ \item \texttt{PrimaryVertexX}: Position [mm] on the $x$-axis of the primary scattering.
+ \item \texttt{PrimaryVertexY}: Position [mm] on the $y$-axis of the primary scattering.
+ \item \texttt{PrimaryVertexZ}: Position [mm] on the $z$-axis of the primary scattering.
+ \item \texttt{PrimaryVertexTheta}: Scattering angle [deg] of the primary scattering.
+ \item \texttt{PrimaryVertexPhi}: Azimuthal angle [deg] of the primary scattering.
+ \item \texttt{PrimaryVertexPX}: Polarization along the $x$-axis of the post-scattering electron.
+ \item \texttt{PrimaryVertexPY}: Polarization along the $y$-axis of the post-scattering electron.
+ \item \texttt{PrimaryVertexPZ}: Polarization along the $z$-axis of the post-scattering electron.
+ \item \texttt{PrimaryCrossSection}: Differential cross-section (cm$^2$/sr) of the primary scattering.
+ \item \texttt{PrimarySherman}: Sherman function of the primary scattering.
+ \item \texttt{PrimarySpinT}: Spin T function cross-section of the primary scattering.
+ \item \texttt{PrimarySpinU}: Spin U function cross-section of the primary scattering.
+ \item \texttt{SecondaryVertexKEprime}: Kinetic energy [MeV] of the secondary electron as generated.
+ \item \texttt{SecondaryVertexX}: Position [mm] on the $x$-axis of the secondary scattering.
+ \item \texttt{SecondaryVertexY}: Position [mm] on the $y$-axis of the secondary scattering.
+ \item \texttt{SecondaryVertexZ}: Position [mm] on the $z$-axis of the secondary scattering.
+ \item \texttt{SecondaryVertexTheta}: Scattering angle [deg] of the secondary scattering.
+ \item \texttt{SecondaryVertexPhi}: Azimuthal angle [deg] of the secondary scattering.
+ \item \texttt{SecondaryVertexPX}: Polarization along the $x$-axis of the post-scattering electron.
+ \item \texttt{SecondaryVertexPY}: Polarization along the $y$-axis of the post-scattering electron.
+ \item \texttt{SecondaryVertexPZ}: Polarization along the $z$-axis of the post-scattering electron.
+ \item \texttt{SecondaryCrossSection}: Differential cross-section (cm$^2$/sr) of the secondary scattering.
+ \item \texttt{SecondarySherman}: Sherman function of the secondary scattering.
+ \item \texttt{SecondarySpinT}: Spin T function cross-section of the secondary scattering.
+ \item \texttt{SecondarySpinU}: Spin U function cross-section of the secondary scattering.
+\end{itemize}
+
+
+\end{document}

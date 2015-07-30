@@ -188,7 +188,7 @@ void MottPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String n
 
     myPrimaryGeneratorAction->SetPhiMin(phiMinCmd->GetNewDoubleValue(newValue));
 
-    G4cout << "Set Minimum Scattering Angle [0 deg, 180 deg] to: "
+    G4cout << "Set Minimum Azimuthal Angle [-180 deg, 180 deg] to: "
            << myPrimaryGeneratorAction->GetPhiMin()/deg
            << " deg" << G4endl;
 
@@ -198,7 +198,7 @@ void MottPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String n
 
     myPrimaryGeneratorAction->SetPhiMax(phiMaxCmd->GetNewDoubleValue(newValue));
 
-    G4cout << "Set Maximum Scattering Angle [0 deg, 180 deg] to: "
+    G4cout << "Set Maximum Azimuthal Angle [-180 deg, 180 deg] to: "
            << myPrimaryGeneratorAction->GetPhiMax()/deg
            << " deg" << G4endl;
 

@@ -120,6 +120,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   Theta2 = 0;	Phi2 = 0;	Energy2 = 0;
   CS2 = 0; 	S2 = 0; 	T2 = 0; 	U2 = 0;
   
+  //G4cout << ThetaMax/deg << G4endl;
+
   // Gausian beam profile.  
   G4double TargetLength = myDetector->GetTargetFullLength();
   G4double sigma = beamDiameter/(2.354820045*mm);
@@ -239,7 +241,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       Theta2 = d_1.angle(d_2);
       G4ThreeVector n_2 = d_1.cross(d_2);
       n_2 = n_2.unit();
-      G4cout << P_2.dot(n_2);
+      G4double sign = ( n_2.dot(gunDirection.cross(P_2)) > 0) - ( n_2.dot(gunDirection.cross(P_2)) < 0);
+      Phi2 = sign*acos(n_2.dot(P_2)); 
       Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
       CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
       S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
@@ -257,13 +260,16 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   } else {					// Throw uniformly across the user specified angular range 
 
-    Theta1 = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() - cos(ThetaMax) );
+    Theta1 = acos( (cos(ThetaMin)-cos(ThetaMax))*G4UniformRand() + cos(ThetaMax) );
+    //G4cout << Theta1/deg << G4endl;
     Phi1 = PhiMin + (PhiMax-PhiMin)*G4UniformRand();
     CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
     S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
     T1 = InterpolateT(Theta1/deg,Energy1/MeV);
     U1 = InterpolateU(Theta1/deg,Energy1/MeV);
     CS1 = CS1*(1 + S1*cos(Phi1));
+    gunDirection.setRThetaPhi(1.0, Theta1, Phi1);
+    Energy = Energy1;
 
   }
 

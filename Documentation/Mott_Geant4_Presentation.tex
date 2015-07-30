@@ -1,0 +1,198 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+\useoutertheme{miniframes}
+
+\usepackage[utf8x]{inputenc}
+\usepackage{default}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{enumerate}
+
+\title{\textbf{GEANT4 Simulation of the Jlab MeV Mott Polarimeter}}
+\author{Martin McHugh\\
+		 mjmchugh@jlab.org}
+\date{2015-07-01}
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{The Problem}
+\begin{columns}[c] % the "c" option specifies center vertical alignment
+\column{.5\textwidth} % column designated by a command
+We don't know the form of the effective Sherman function for targets of finite thickness, $S(d)$.
+\column{.5\textwidth}
+\includegraphics[scale=0.4]{Plots/DataAsymVsThickness.pdf}
+\end{columns} 
+\end{frame}
+
+\begin{frame}
+ \frametitle{How Can Simulation Help Us?}
+ \begin{columns}[c] % the "c" option specifies center vertical alignment
+ \column{.5\textwidth} % column designated by a command
+  \begin{itemize}
+   \item Allows us to examine contributions to detector signal individually.
+   \item Beam is treated as 100\% polarized in $y$ direction.
+   \item Gaussian, circular beam profile with width of 1 mm.
+  \end{itemize}
+ \column{.5\textwidth}
+  \textbf{Why Brute Force doesn't work:} 1 $\mu$A is 6.24$\times 10^{12}$ $e^{-}/s$ and we need $\approx$ 1000 $\mu$As of data for a decent measurement. Can only simulate 100 million events per day...
+ \end{columns}
+\end{frame}
+
+\begin{frame}
+ \frametitle{How to Generate Single-Scattering Events}
+ \begin{columns}[c] % the "c" option specifies center vertical alignment
+  \column{.5\textwidth} % column designated by a command
+   \begin{enumerate}
+    \item Pick point $\vec{x}_1$ in the beam profile on the target.
+    \item Calculate energy loss to $\vec{x}_1$. Get new energy $E_1$.
+    \item Pick point $\vec{x}_2$ in acceptance to throw at.
+    \item Calculate $\sigma(\theta_1,\phi_1, E_1)$ based on $\vec{x}_1$, $\vec{x}_2$.
+    \item Throw random number, $x$. If $ x < \sigma $ throw electron. Else, repeat from 1.
+   \end{enumerate}
+  \column{.5\textwidth}
+   \includegraphics[scale=0.4]{Plots/DataSimAsymVsThickness.pdf}
+ \end{columns}
+\end{frame}
+
+\begin{frame}
+ \frametitle{How to Generate Double-Scattering Events}
+  \begin{enumerate}
+   \item Pick point $\vec{x}_1$ in the beam profile on the target.
+   \item Calculate energy loss to $\vec{x}_1$. Get new energy $E_1$.
+   \item Pick point $\vec{x}_2$ in target with $|\vec{x}_2 - \vec{x}_1| < r_E.$
+   \item Calculate $\sigma_1(\theta_1,\phi_1, E_1)$ based on $\vec{x}_1$, $\vec{x}_2$.
+   \item Calculate energy loss to $\vec{x}_2$. Get new energy $E_2$.
+   \item Pick point, $\vec{x}_3$, in acceptance to throw at.
+   \item Calculate $\sigma_2(\theta_2,\phi_1, E_2)$.
+    \item Throw random number, $x$. If $ x < \sigma_1\sigma_2 $ throw electron. Else, repeat from 1.
+  \end{enumerate}
+\end{frame}
+ 
+\begin{frame}
+ \frametitle{Double Scattering Asymmetry}
+  The Asymmetry is calculated to be:
+  \begin{equation*}
+   A_{d.s.} = \frac{L-R}{L+R} = -01.05\% \pm 0.06\%
+  \end{equation*}
+  for all target thicknesses. The problem now becomes one of determining how much of a dilution this is at each target thickness.
+\end{frame}
+ 
+\begin{frame}
+ \frametitle{Scattering into Left Detector}
+  \centering
+   \includegraphics[width=0.9\linewidth]{Plots/Left_2_Scattering.pdf}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Double Scattering Generation: Method 2}
+ \begin{enumerate}
+  \item Pick a scattering position, $\vec{x}_1$, within the intersection of the beam and our target.
+  \item Pick a direction direction, $(\theta_1,\phi_1)$, from the uniform unit sphere.
+  \item Pick a point, $\vec{x}_2$, uniformly between $\vec{x}_1$ and the edge of the foil (or 0.16 mm as in the previous example).
+  \item Pick a point, $\vec{x}_3$, in the acceptance the primary collimator.
+  \item Throw from $\vec{x}_2$ towards $\vec{x}_3$.
+\end{enumerate}
+Not weighting by cross section allows for an easier integral in the rate calculation. 
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{Calculating Rates}
+  In order to compare both types of simulation and to compare simulation to data, we must be able to calculate rates. The rate is given as
+  \begin{equation*}
+   \mathcal{R} = \mathcal{L} \int_x \sigma(x)\epsilon(x)
+  \end{equation*}
+  where $\epsilon$ is the effective acceptance of the detectors and $x$ are the degrees of freedom over which the integral is performed.
+\end{frame}
+
+\begin{frame}
+ \frametitle{Calculating Rates (Single Scattering)}
+ In the case of single scattering the integral can be simplified to:
+ \begin{align*}
+  \mathcal{R} &\approx \mathcal{L} \langle\sigma\rangle \frac{N_{hit}}{N_{thrown}}\Delta\cos\theta\Delta\phi
+ \end{align*}
+ \begin{table} [h!]
+ \centering
+ \begin{tabular}{| c | c | c | c | c |} 
+  \hline d ($\mu$m) & $\mathcal{R}_L$ (Hz/$\mu$A) & $\mathcal{R}_R$ (Hz/$\mu$A) & $\mathcal{R}_\mathrm{avg}$ & $\mathcal{R}_\mathrm{data}$ \\
+  \hline 0.05 & 5.3 & 11.6 & 8.5 & 9.3\\ 
+  \hline 1.00 & 104.3 & 241.9 & 173.1 & 214.3 \\
+  \hline
+ \end{tabular}
+
+\end{table}
+ This is a good sanity check.  
+\end{frame}
+
+\begin{frame}
+ \frametitle{Calculating Rates (Double Scattering)}
+ \begin{itemize}
+  \item Attempting the same simplification doesn't work in the double scattering case. Rates are $\approx10^{-12}$ smaller than the single scattering case. 
+  \item More thought needs to go into performing this integral in order to make the simulation work. 
+  \item Once this works, we should be able to calculate
+   \begin{equation*}
+    A(d) = \frac{\left[\mathcal{R}_{L_1}(d)-\mathcal{R}_{R_1}(d)\right] + \left[\mathcal{R}_{L_2}(d)-\mathcal{R}_{R_2}(d)\right]}{\left[\mathcal{R}_{L_1}(d)+\mathcal{R}_{R_1}(d)\right] + \left[\mathcal{R}_{L_2}(d)+\mathcal{R}_{R_2}(d)\right]}
+   \end{equation*}
+   directly from simulation.
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Spectra}
+  \includegraphics[scale=0.54]{Plots/SimulatedSpectra.pdf}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Summary}
+ \begin{itemize}
+  \item Single scattering simulation gives good results but no $d$-dependence in Asymmetry.
+  \item Can't calculate rate yet for Double-scattering. Asymmetry is small. Need to determine proper dilution.
+  \item Spectra look decent, can't tell how much but it looks like the double scattering will influence the low energy shoulder to some degree.
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Energy Loss in the Gold Foils}
+ \begin{columns}[c] % the "c" option specifies center vertical alignment
+  \column{.5\textwidth} % column designated by a command
+   Using the table at right, we determine the linear fit
+   \begin{equation*}
+    \frac{dE}{dx}(E) =  \frac{0.272}{\mathrm{mm}}\times E + 1.888 \frac{\mathrm{MeV}}{\mathrm{mm}}. 
+   \end{equation*}
+   Numerical integration of the above gives us energy loss within the target. Note: A particle with initial energy of 5 MeV will only lose ~3 keV/$\mu$m and will lose 500 keV in  $\approx\,200 \mu$m. 
+  \column{.5\textwidth}
+   \begin{tabular} {|c|c|}
+    \hline 
+    Energy [MeV] & dE/dx [MeV/mm] \\
+    \hline 
+    1.0 & 2.179 \\
+    2.0 & 2.422 \\ 
+    3.0 & 2.702 \\
+    4.0 & 2.980 \\
+    5.0 & 3.254 \\
+    6.0 & 3.526 \\
+    7.0 & 3.796 \\
+    8.0 & 4.065 \\
+    \hline
+   \end{tabular}
+   Data from NIST estar database.
+ \end{columns}
+\end{frame}
+
+\begin{frame}
+ \frametitle{What Steigerwald Did}
+  His method of calculating multiple scattering's influence was direct integration of some form:
+  \begin{equation*}
+   N = \int\limits_{\theta = 0}^{\pi} \int\limits_{\phi = 0}^{2\pi} \int\limits_{x_1 = 0}^{D} \int\limits_{\psi=\theta_{2}}^{\theta_2+\Omega_\theta}\sigma_1(x_1,\theta, \phi)\sigma_2(x_2,\theta_2)E(x_1,x_2) d\psi dl d\phi d\theta. 
+  \end{equation*}
+  The problem is that his source for this integral is in German and his code is poorly documented and also in partial German.
+\end{frame}
+ 
+\end{document}
