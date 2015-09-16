@@ -74,7 +74,7 @@ class MottEventAction : public G4UserEventAction
     G4int GetNEPE(G4int i) { return NEPE[i]; };  
     G4int GetndEPE(G4int i) { return NdEPE[i]; };
 
-    // Primary Vertex Set()/Get()
+    // Vertex Set()/Get()
     inline void SetKEPrime(G4double KE, G4int i) { KEPrime[i] = KE; };
     G4double GetKEPrime(G4int i) { return KEPrime[i]; };
     inline void SetXPos(G4double X, G4int i) { XPos[i] = X; };
@@ -101,6 +101,10 @@ class MottEventAction : public G4UserEventAction
     G4double GetT(G4int i) { return T[i]; };
     inline void SetU(G4double u, G4int i) { U[i] = u; };
     G4double GetU(G4int i) { return U[i]; };
+    inline void SetScatTheta(G4double theta) { ScatTheta = theta; };
+    G4double GetScatTheta() { return ScatTheta; };
+    inline void SetScatPhi(G4double phi) { ScatPhi = phi; };
+    G4double GetPhi() { return ScatPhi; };
 
     void SetStoreAll(G4int value = 1) { StoreAll = value; };
 
@@ -121,7 +125,7 @@ class MottEventAction : public G4UserEventAction
     G4int NEPE[4];
     G4int NdEPE[4];     
 
-    // Primary Vertex
+    // Vertex Info
     G4double KEPrime[2];
     G4double XPos[2];	// Scattering Vertex location
     G4double YPos[2];
@@ -137,6 +141,9 @@ class MottEventAction : public G4UserEventAction
     G4double S[2];
     G4double T[2];
     G4double U[2];
+
+    G4double ScatTheta;
+    G4double ScatPhi;
 
     // Dump "Detectors"
     //G4double BeEnergyDeposited[6*20];

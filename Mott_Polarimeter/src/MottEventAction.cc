@@ -203,7 +203,7 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     analysisManager->FillNtupleDColumn(28, T[0]);
     analysisManager->FillNtupleDColumn(29, U[0]);
 
-    // Primary Vertex Info
+    // Secondary Vertex Info
     analysisManager->FillNtupleDColumn(30, KEPrime[1]/MeV);
     analysisManager->FillNtupleDColumn(31, XPos[1]/mm);
     analysisManager->FillNtupleDColumn(32, YPos[1]/mm);
@@ -214,11 +214,15 @@ void MottEventAction::EndOfEventAction(const G4Event* evt)
     analysisManager->FillNtupleDColumn(37, YPol[1]);
     analysisManager->FillNtupleDColumn(38, ZPol[1]);
 
-    // Primary Vertex Dynamics
+    // Secondary Vertex Dynamics
     analysisManager->FillNtupleDColumn(39, CS[1]);
     analysisManager->FillNtupleDColumn(40, S[1]);
     analysisManager->FillNtupleDColumn(41, T[1]);
     analysisManager->FillNtupleDColumn(42, U[1]);
+
+    // Scattering Direction
+    analysisManager->FillNtupleDColumn(43, ScatTheta/deg);
+    analysisManager->FillNtupleDColumn(44, ScatPhi/deg);
 
     /* Be Dump Plate
     for(G4int i=0; i<6*20; i++) {

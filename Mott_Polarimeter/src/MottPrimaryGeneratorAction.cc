@@ -231,8 +231,9 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
       T1 = InterpolateT(Theta1/deg,Energy1/MeV);
       U1 = InterpolateU(Theta1/deg,Energy1/MeV);
-      CS1 = CS1*(1 + S1*n_1.dot(P_1));    
+      CS1 = CS1*(1 + S1*n_1.dot(P_1));
       G4ThreeVector P_2 = CalculateNewPol(n_1,P_1,S1,T1,U1);
+      G4cout << n_1.x() << " " << n_1.y() << " " << n_1.z() << G4endl;
       Px2 = P_2.x();
       Py2 = P_2.y();
       Pz2 = P_2.z();
@@ -242,7 +243,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4ThreeVector n_2 = d_1.cross(d_2);
       n_2 = n_2.unit();
       G4double sign = ( n_2.dot(gunDirection.cross(P_2)) > 0) - ( n_2.dot(gunDirection.cross(P_2)) < 0);
-      Phi2 = sign*acos(n_2.dot(P_2)); 
+      Phi2 = sign*acos(n_2.dot(P_2));
       Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
       CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
       S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
@@ -254,9 +255,68 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       if(rejectionThrow<=CS) {
         goodThrow = 1;
         gunDirection = d_2.unit();
+        gunPosition = x_2;
         Energy = Energy2;
       }
     }
+
+  } else if (EventType == 3) {				// Throw double scattering without rejection sampling
+    
+    // Pick random direction uniformly on the sphere.
+    Theta1 = acos(2.0*G4UniformRand()-1);
+    Phi1 = 2.0*pi*G4UniformRand() - pi;
+    // First Scattering Dynamics
+    CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+    S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+    T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+    U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+    // Pick length along that direction between vertex and edge of foil volume
+    G4double d_prime = (TargetLength-depth)/fabs(cos(Theta1));
+    //G4cout << Theta1 << " " << fabs(cos(Theta1)) << " " << d_prime/um << G4endl;
+    if(d_prime > 0.157*mm) d_prime = 0.157*mm;
+    G4double d_1_length = d_prime*G4UniformRand();
+    G4ThreeVector d_1;
+    d_1.setRThetaPhi(d_1_length, Theta1, Phi1);
+    // Set second scattering location (a.k.a. gunPosition)
+    gunPosition = gunPosition + d_1;
+    d_1.setMag(1.0);
+    X2 = gunPosition.x();
+    Y2 = gunPosition.y();
+    Z2 = gunPosition.z();
+    G4ThreeVector n_1 = gunDirection.cross(d_1);
+    n_1.unit();
+    CS1 = CS1*(1 + S1*n_1.dot(P_1));
+    G4ThreeVector P_2 = CalculateNewPol(n_1,P_1,S1,T1,U1);
+    Px2 = P_2.x();
+    Py2 = P_2.y();
+    Pz2 = P_2.z();
+    //G4cout << Theta1 << " " << Phi1 << " " << d_1.x() << " " << d_1.y() << " " << d_1.z() << " " << n_1.x() << " " << n_1.y() << " " << n_1.z() << " " << Px2 << " " << Py2 << " " << Pz2 << G4endl;
+    // Now it's time to throw a uniformly random Theta and Phi towards the collimators
+    // 5 deg in theta 20 deg in phi
+    G4double Theta = (acos( (cos(170*pi/180)-cos(175*pi/180))*G4UniformRand() + cos(175*pi/180)))*rad;
+    G4double Phi;
+    G4double CoinToss = G4UniformRand();
+    if (CoinToss<0.5) {
+      Phi = (-10.0*pi/180.0 + (20.0*pi/180.0)*G4UniformRand())*rad;
+    } else {
+      Phi = (170.0*pi/180.0 + (20.0*pi/180.0)*G4UniformRand())*rad;
+    }
+    gunDirection.setRThetaPhi(1.0, Theta, Phi);
+    // G4cout << Theta/deg  << " " << Phi/deg << " " << gunDirection.theta()/deg << " " << gunDirection.phi()/deg << G4endl;
+    // Calculate second scattering kinematics
+    G4ThreeVector n_2 = d_1.cross(gunDirection);
+    Theta2 = d_1.angle(gunDirection);
+    n_2 = n_2.unit();
+    G4double sign = ( n_2.dot(gunDirection.cross(P_2)) > 0) - ( n_2.dot(gunDirection.cross(P_2)) < 0);
+    Phi2 = sign*acos(n_2.dot(P_2));
+    //G4cout << sign << " " << n_2.dot(P_2) << " " << acos(n_2.dot(P_2)) << " " << acos(n_2.dot(P_2))/deg << G4endl;
+    Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
+    CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
+    S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
+    T2 = InterpolateT(Theta2/deg,Energy2/MeV);
+    U2 = InterpolateU(Theta2/deg,Energy2/MeV);
+    CS2 = CS2*(1 + S2*n_2.dot(P_2));
+    Energy = Energy2;
 
   } else {					// Throw uniformly across the user specified angular range 
 
@@ -301,6 +361,9 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   pEventAction->SetS(S2, 1);				// Sherman Function 
   pEventAction->SetT(T2, 1);				// SpinT
   pEventAction->SetU(U2, 1);				// SpinU
+  // Gun direction
+  pEventAction->SetScatTheta(gunDirection.theta());	// Generated Theta
+  pEventAction->SetScatPhi(gunDirection.phi());	// Generated Phi
 
   // Set variable gun properties
   particleGun->SetParticleEnergy(Energy);			// scattered electron KE

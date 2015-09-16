@@ -166,6 +166,10 @@ void MottRunAction::BeginOfRunAction(const G4Run* aRun)
   analysisManager->CreateNtupleDColumn("SecondarySpinT");		// 41
   analysisManager->CreateNtupleDColumn("SecondarySpinU");		// 42
 
+  // Scattering Direction
+  analysisManager->CreateNtupleDColumn("Theta");		// 43
+  analysisManager->CreateNtupleDColumn("Phi");			// 44
+
   /* Dump Plate segments.
   G4int nBeSegments = 20*6;
   G4int nCuSegments = 20*18;
