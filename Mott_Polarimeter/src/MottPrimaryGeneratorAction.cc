@@ -146,121 +146,27 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     Z1 = -10.0*cm;
     gunPosition = G4ThreeVector(X1, Y1, Z1);
 
-  } else if(EventType == 1) {							// Throw single scattered electrons
+  } else if(EventType == 1) {	// Throw single scattered electrons without rejection sampling
 
-    G4int goodThrow = 0;
-    G4double MaxThrow = 1.0e-25;
-    while (goodThrow==0) {
-      G4double x_0 = 0.0;
-      G4double y_0 = 0.0*mm;
-      G4double z_0 = -277.597*mm; 						// Front face of collimator
-      G4double CoinToss = G4UniformRand();
-      if(0.0<=CoinToss&&CoinToss<0.5) {						// Pick L or R detector
-        x_0 = - 2.850*25.4*mm/2.0;
-      } else if(0.5<=CoinToss&&CoinToss<=1.0) {
-        x_0 = 2.850*25.4*mm/2.0;
-      } 
-      G4double R = 0.192*25.4*mm/2.0;						// radius of collimator opening
-      G4double ph = 2*pi*G4UniformRand();
-      G4double u = R*(G4UniformRand() + G4UniformRand());
-      if (u > R) u = 2*R-u;
-      G4ThreeVector throwTo = G4ThreeVector(u*cos(ph)+x_0, u*sin(ph)+y_0, z_0); // location in collimator opening
-      G4ThreeVector d_1 = throwTo - gunPosition;
-      d_1 = d_1.unit();
-      G4ThreeVector n_1 = gunDirection.cross(d_1);
-      n_1 = n_1.unit();
-      Theta1 = d_1.theta();
-      Phi1 = d_1.phi();
-      CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
-      S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
-      T1 = InterpolateT(Theta1/deg,Energy1/MeV);
-      U1 = InterpolateU(Theta1/deg,Energy1/MeV);
-      CS1 = CS1*(1 + S1*n_1.dot(P_1));
-      G4double rejectionThrow = MaxThrow*G4UniformRand();
-      if(rejectionThrow<=CS1) {
-      	goodThrow = 1;
-        G4ThreeVector P_2 = CalculateNewPol(n_1,P_1, S1, T1, U1);
-        Px2 = P_2.x();
-        Py2 = P_2.y();
-        Pz2 = P_2.z();
-        Energy = Energy1;
-      }
-    }      
-    gunDirection.setRThetaPhi(1.0, Theta1, Phi1);
-
-  } else if (EventType == 2) {						// Throw double scattered electrons		
-									// at the collimator
-    G4int goodThrow = 0;
-    G4double MaxThrow = 2.0e-46;
-    while(goodThrow == 0) {
-      // Kinematic Considerations
-      // Pick point for second scattering (within a disk within a given radius of the first scattering)
-      G4double R_2 = G4UniformRand()*0.157*mm;
-      G4double ph_2 = 2*pi*G4UniformRand();
-      X2 = R_2*cos(ph_2)+X1;
-      Y2 = R_2*sin(ph_2)+Y1;
-      Z2 = (G4UniformRand() - 0.5)*TargetLength + myDetector->GetTargetZPosition();
-      G4ThreeVector x_2 = G4ThreeVector(X2, Y2, Z2);
-      // pick point in collimator acceptance to throw to
-      G4double x_0 = 0.0;
-      G4double CoinToss = G4UniformRand();
-      if(0.0<=CoinToss && CoinToss<0.5) {					// Pick L or R detector
-        x_0 = - 2.850*25.4*mm/2.0;
-      } else if(0.5<=CoinToss && CoinToss<=1.0) {
-        x_0 = 2.850*25.4*mm/2.0;
-      } 
-      G4double y_0 = 0.0*mm;
-      G4double z_0 = -277.597*mm; 						// Front face of collimator
-      G4double R = 0.192*25.4*mm/2.0;						// radius of collimator opening
-      G4double ph = 2*pi*G4UniformRand();
-      G4double u = G4UniformRand() + G4UniformRand();
-      if (u > 1.0) {
-        u = R*(2-u);
-      } else {
-        u = R*u;
-      }
-      G4ThreeVector x_3 = G4ThreeVector(u*cos(ph)+x_0, u*sin(ph)+y_0, z_0); // location in collimator opening    
-      // calculate things for first scattering.
-      G4ThreeVector d_1 = x_2 - gunPosition;
-      G4double d_1_length = d_1.mag()/mm;
-      G4ThreeVector n_1 = gunDirection.cross(d_1);
-      n_1 = n_1.unit();
-      Theta1 = d_1.theta();
-      Phi1 = d_1.phi();
-      CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
-      S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
-      T1 = InterpolateT(Theta1/deg,Energy1/MeV);
-      U1 = InterpolateU(Theta1/deg,Energy1/MeV);
-      CS1 = CS1*(1 + S1*n_1.dot(P_1));
-      G4ThreeVector P_2 = CalculateNewPol(n_1,P_1,S1,T1,U1);
-      G4cout << n_1.x() << " " << n_1.y() << " " << n_1.z() << G4endl;
-      Px2 = P_2.x();
-      Py2 = P_2.y();
-      Pz2 = P_2.z();
-      // Calculate things for second scattering
-      G4ThreeVector d_2 = x_3-x_2;
-      Theta2 = d_1.angle(d_2);
-      G4ThreeVector n_2 = d_1.cross(d_2);
-      n_2 = n_2.unit();
-      G4double sign = ( n_2.dot(gunDirection.cross(P_2)) > 0) - ( n_2.dot(gunDirection.cross(P_2)) < 0);
-      Phi2 = sign*acos(n_2.dot(P_2));
-      Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
-      CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
-      S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
-      T2 = InterpolateT(Theta2/deg,Energy2/MeV);
-      U2 = InterpolateU(Theta2/deg,Energy2/MeV);
-      CS2 = CS2*(1 + S2*n_2.dot(P_2));
-      G4double CS = CS2*CS1;
-      G4double rejectionThrow = MaxThrow*G4UniformRand();
-      if(rejectionThrow<=CS) {
-        goodThrow = 1;
-        gunDirection = d_2.unit();
-        gunPosition = x_2;
-        Energy = Energy2;
-      }
+    // Throw a random Theta and Phi towards the collimators
+    // 5 deg in theta 20 deg in phi
+    Theta1 = (acos( (cos(170*pi/180)-cos(175*pi/180))*G4UniformRand()
+                           + cos(175*pi/180)))*rad;
+    G4double CoinToss = G4UniformRand();
+    if (CoinToss<0.5) {
+      Phi1 = (-10.0*pi/180.0 + (20.0*pi/180.0)*G4UniformRand())*rad;
+    } else {
+      Phi1 = (170.0*pi/180.0 + (20.0*pi/180.0)*G4UniformRand())*rad;
     }
+    CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+    S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+    T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+    U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+    CS1 = CS1*(1 + S1*cos(Phi1));
+    gunDirection.setRThetaPhi(1.0, Theta1, Phi1);
+    Energy = Energy1;
 
-  } else if (EventType == 3) {				// Throw double scattering without rejection sampling
+  } else if(EventType == 2) {	// Throw double scattering without rejection sampling
     
     // Pick random direction uniformly on the sphere.
     Theta1 = acos(2.0*G4UniformRand()-1);
@@ -293,7 +199,8 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     //G4cout << Theta1 << " " << Phi1 << " " << d_1.x() << " " << d_1.y() << " " << d_1.z() << " " << n_1.x() << " " << n_1.y() << " " << n_1.z() << " " << Px2 << " " << Py2 << " " << Pz2 << G4endl;
     // Now it's time to throw a uniformly random Theta and Phi towards the collimators
     // 5 deg in theta 20 deg in phi
-    G4double Theta = (acos( (cos(170*pi/180)-cos(175*pi/180))*G4UniformRand() + cos(175*pi/180)))*rad;
+    G4double Theta = (acos( (cos(170*pi/180)-cos(175*pi/180))*G4UniformRand()
+                           + cos(175*pi/180)))*rad;
     G4double Phi;
     G4double CoinToss = G4UniformRand();
     if (CoinToss<0.5) {
