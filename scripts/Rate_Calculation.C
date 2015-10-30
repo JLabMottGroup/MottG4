@@ -66,9 +66,9 @@ int main(Int_t argc, Char_t *argv[]) {
 
   const char* FileDir = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/build";
   TChain* pChain = new TChain("Mott");
-  pChain->Add(Form("%s/Single_%sum.root", FileDir,argv[1]));
+  //pChain->Add(Form("%s/Single_%sum.root", FileDir,argv[1]));
   //for(Int_t i=0; i<atoi(argv[2]); i++) pChain->Add(Form("%s/Single_%i.root", FileDir,i));
-  //pChain->Add(Form("%s/Single_%s.root", FileDir,argv[2]));
+  pChain->Add(Form("%s/Single_%s.root", FileDir,argv[1]));
   
   Int_t nBinsTheta = 100;
   Int_t nBinsPhi = 100;
@@ -116,6 +116,20 @@ int main(Int_t argc, Char_t *argv[]) {
   hAccFunc_Left->Divide(hNhit_Left,hNthrown_Left);
   hAccFunc_Right->Divide(hNhit_Right,hNthrown_Right);
 
+  TCanvas* c1 = new TCanvas("c1","c1",800,400);
+  c1->Divide(2,1);
+  c1->cd(1);
+  pCS_Left->GetXaxis()->SetTitle("#chi [deg]");
+  pCS_Left->GetYaxis()->SetTitle("#psi [deg]");
+  pCS_Left->Draw("CONT4");
+  c1->cd(2);
+  hAccFunc_Left->GetXaxis()->SetTitle("#chi [deg]");
+  hAccFunc_Left->GetYaxis()->SetTitle("#psi [deg]");
+  hAccFunc_Left->Draw("CONT4");
+  c1->cd();
+  c1->Print("CSandEpsilon.root");
+  delete c1;
+  
   const Int_t npar = 5;
   Double_t fitParamsLeft[npar] = {1.0,172.5,0.4,0.0,3.0};
   Double_t fitParamsRight[npar] = {1.0,172.5,0.4,180.0,3.0};
@@ -197,28 +211,22 @@ int main(Int_t argc, Char_t *argv[]) {
     // Find if it's an event to the left or the right
     if (-10<=Phi && Phi<=10) {
       nLeft++;
-      //epsilon = hAccFunc_Left->GetBinContent(hAccFunc_Left->FindBin(Theta,Phi));
       epsilon = fepsilonLeft->Eval(Theta,Phi);
       sumLeft += sigma*epsilon;
-      //std::cout << "Left " << sigma << " " << epsilon << " " << sigma*epsilon << std::endl;
       sumSquareLeft += sigma*epsilon*sigma*epsilon;
     } else {
       nRight++;
-      //epsilon = hAccFunc_Right->GetBinContent(hAccFunc_Right->FindBin(Theta,Phi));
       epsilon = fepsilonRight->Eval(Theta,Phi);
       sumRight += sigma*epsilon;
-      //std::cout << "Right " << sigma << " " << epsilon << std::endl; 
       sumSquareRight += sigma*epsilon*sigma*epsilon;
     }
   }    
   Double_t estLeft = sumLeft/nLeft;
   Double_t estSquareLeft = sumSquareLeft/nLeft;
-  Double_t varLeft = TMath::Sqrt( (estSquareLeft - estLeft*estLeft) );
+  Double_t varLeft = TMath::Sqrt( (estSquareLeft - estLeft*estLeft) / nLeft);
   Double_t estRight = sumRight/nRight;
   Double_t estSquareRight = sumSquareRight/nRight;
-  Double_t varRight = TMath::Sqrt( (estSquareRight - estRight*estRight) );
-  
-  //std::cout<< estLeft << " " << estRight << std::endl;
+  Double_t varRight = TMath::Sqrt( (estSquareRight - estRight*estRight) / nRight);
   
   ////////////////////
   // Results        //
@@ -230,16 +238,16 @@ int main(Int_t argc, Char_t *argv[]) {
 
   Double_t constant = luminosity*(pi/9.0)*(TMath::Cos(pi/36.0)-TMath::Cos(pi/18.0));
   estLeft *= constant;	varLeft *= constant;
-  estRight *= constant;	varRight *= constant;
-  
+  estRight *= constant;	varRight *= constant;  
+ 
   std::cout << "Left Rate1 = " << Sum_L << " +- " << dSum_L << std::endl;  
   std::cout << "Right Rate1 = " << Sum_R << " +- " << dSum_R << std::endl;
   std::cout << "Avg1 = " << (Sum_L + Sum_R)/2.0 << " +- " << dR << std::endl;
   std::cout << "Left Rate2 = " << estLeft << " +- " << varLeft << std::endl;  
   std::cout << "Right Rate2 = " << estRight << " +- " << varRight << std::endl;
   
-  printf("  \\\\hline %g & %g $\\pm$ %g & %g $\\pm$ %g & %g & %g \\\\ \n", 
-            d, Sum_L, dSum_L, Sum_R, dSum_R, estLeft, estRight );
+  printf("  \\\\hline %g & %g $\\pm$ %g & %g $\\pm$ %g & %g $\\pm$ %g &  %g $\\pm$ %g &\\\\ \n", 
+            d, Sum_L, dSum_L, Sum_R, dSum_R, estLeft, varLeft, estRight, varRight);
   //std::cout << Sum_L << " & " << Sum_R << " & " << estLeft << " & " << estRight << std::endl;
 
   return 0;

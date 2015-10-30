@@ -177,7 +177,12 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     T1 = InterpolateT(Theta1/deg,Energy1/MeV);
     U1 = InterpolateU(Theta1/deg,Energy1/MeV);
     // Pick length along that direction between vertex and edge of foil volume
-    G4double d_prime = (TargetLength-depth)/fabs(cos(Theta1));
+    G4double d_prime = 0;
+    if(0<=Theta1 && Theta1<=pi/2.0) {
+      d_prime = (TargetLength-depth)/fabs(cos(Theta1));
+    } else if(pi/2.0<=Theta1 && Theta1<=pi) { 
+      d_prime = (-depth)/fabs(cos(Theta1));
+    }
     //G4cout << Theta1 << " " << fabs(cos(Theta1)) << " " << d_prime/um << G4endl;
     if(d_prime > 0.157*mm) d_prime = 0.157*mm;
     G4double d_1_length = d_prime*G4UniformRand();
