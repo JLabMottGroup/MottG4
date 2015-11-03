@@ -184,7 +184,7 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       d_prime = (-depth)/fabs(cos(Theta1));
     }
     //G4cout << Theta1 << " " << fabs(cos(Theta1)) << " " << d_prime/um << G4endl;
-    if(d_prime > 0.157*mm) d_prime = 0.157*mm;
+    if(d_prime > 5.0*0.157*mm) d_prime = 5.0*0.157*mm;
     G4double d_1_length = d_prime*G4UniformRand();
     G4ThreeVector d_1;
     d_1.setRThetaPhi(d_1_length, Theta1, Phi1);

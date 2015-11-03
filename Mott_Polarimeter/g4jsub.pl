@@ -195,14 +195,14 @@ my $xmlfile =
   <Project name=\"qweak\"/>
   <Track name=\"simulation\"/>
   <Name name=\"$basename\"/>
-  <OS name=\"centos62\"/>
+  <OS name=\"centos65\"/>
   <Command><![CDATA[
 source /home/$user/.login
 cd $MottGeantDir/Mott_Polarimeter
 build/mott macros/jobs/$basename\.mac
   ]]></Command>
 
-  <Memory space=\"2000\" unit=\"MB\"/>
+  <Memory space=\"4000\" unit=\"MB\"/>
 
   <Job>
     <Stdout dest=\"$outfile\"/>
@@ -226,7 +226,7 @@ if( $tapedir ) {
   <Project name=\"qweak\"/>
   <Track name=\"simulation\"/>
   <Name name=\"$basename\"/>
-  <OS name=\"centos62\"/>
+  <OS name=\"centos65\"/>
   <Command><![CDATA[
 source /home/$user/.login
 cd $MottGeantDir/Mott_Polarimeter
@@ -235,7 +235,7 @@ jput $rootfile $tapedir
 rm -f $rootfile 
   ]]></Command>
 
-  <Memory space=\"2000\" unit=\"MB\"/>
+  <Memory space=\"4000\" unit=\"MB\"/>
 
   <Job>
     <Stdout dest=\"$outfile\"/>
