@@ -9,7 +9,7 @@
 // Compile with:
 //	> g++ -o Rate_Calculation Rate_Calculation.C `root-config --cflags --glibs`
 // Run with
-//	> ./Rate_Calculation [target thickness]
+//	> ./Rate_Calculation [target thickness] nFiles
 
 
 #include <iostream>
@@ -63,15 +63,17 @@ int main(Int_t argc, Char_t *argv[]) {
   const Double_t A_Au = 196.97;				// Gold atomic weight [g/mol]
   const Double_t targetCenterZ = -(3.9878);		// Target center position [mm]
   Double_t d = 1.0e-4*atof(argv[1]);			// target_thickness [cm]
+  Int_t nFiles = atoi(argv[2]);
 
-  const char* FileDir = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/build";
+  const char* FileDir = "/lustre/expphy/volatile/hallc/qweak/mjmchugh/Mott/Round2";
   TChain* pChain = new TChain("Mott");
-  //pChain->Add(Form("%s/Single_%sum.root", FileDir,argv[1]));
-  //for(Int_t i=0; i<atoi(argv[2]); i++) pChain->Add(Form("%s/Single_%i.root", FileDir,i));
-  pChain->Add(Form("%s/Single_%s.root", FileDir,argv[1]));
-  
-  Int_t nBinsTheta = 100;
-  Int_t nBinsPhi = 100;
+  for(Int_t i=1; i<nFiles+1; i++) {
+    pChain->Add(Form("%s/Single_%sum_%i.root",FileDir,argv[1],i));
+    std::cout << "Added File " << i << std::endl;
+  }
+
+  Int_t nBinsTheta = 200;
+  Int_t nBinsPhi = 200;
   TProfile2D* pCS_Left = new TProfile2D("pCS_Left","pCS_Left",nBinsTheta,170.0,175.0,nBinsPhi,-10.0,10.0);
   TProfile2D* pCS_Right = new TProfile2D("pCS_Right","pCS_Right",nBinsTheta,170.0,175.0,nBinsPhi,170.0,190.0);
   TH2F* hNhit_Left = new TH2F("hNhit_Left","hNhit_Left",nBinsTheta,170.0,175.0,nBinsPhi,-10.0,10.0);
@@ -104,11 +106,11 @@ int main(Int_t argc, Char_t *argv[]) {
     if(-10<=Phi&&Phi<=10) {
       pCS_Left->Fill(Theta,Phi,PrimaryCrossSection);
       hNthrown_Left->Fill(Theta,Phi);
-      if(Left_E>0 && Left_dE>0) hNhit_Left->Fill(Theta,Phi);
+      if( (4.6<Left_E&&Left_E<5.1) && Left_dE>0) hNhit_Left->Fill(Theta,Phi);
     } else {
       pCS_Right->Fill(Theta,Phi,PrimaryCrossSection);
       hNthrown_Right->Fill(Theta,Phi);
-      if(Right_E>0 && Right_dE>0) hNhit_Right->Fill(Theta,Phi);      
+      if( (4.6<Right_E&&Right_E<5.1) && Right_dE>0) hNhit_Right->Fill(Theta,Phi);      
     }
     
   }
@@ -162,7 +164,7 @@ int main(Int_t argc, Char_t *argv[]) {
       Double_t d_epsilon_R = hAccFunc_Right->GetBinError(theta_i,phi_j);
 
       X_L = sigma_L*epsilon_L*s_i;
-      X_R = sigma_R*epsilon_R*s_i;      
+      X_R = sigma_R*epsilon_R*s_i;
       
       if(sigma_L==0 || epsilon_L==0) {
         dX_L = 0;
@@ -202,6 +204,10 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t sumRight = 0;
   Double_t sumSquareLeft = 0;
   Double_t sumSquareRight = 0;
+  Double_t sumLeft2 = 0;
+  Double_t sumRight2 = 0;
+  Double_t sumSquareLeft2 = 0;
+  Double_t sumSquareRight2 = 0;
   for(Int_t i=0; i<nEntries; i++) {
     pChain->GetEntry(i);
             
@@ -214,11 +220,19 @@ int main(Int_t argc, Char_t *argv[]) {
       epsilon = fepsilonLeft->Eval(Theta,Phi);
       sumLeft += sigma*epsilon;
       sumSquareLeft += sigma*epsilon*sigma*epsilon;
+      if(Left_E>0 && Left_dE>0) {
+	sumLeft2 += sigma;
+	sumSquareLeft2 += sigma*sigma;
+      }
     } else {
       nRight++;
       epsilon = fepsilonRight->Eval(Theta,Phi);
       sumRight += sigma*epsilon;
       sumSquareRight += sigma*epsilon*sigma*epsilon;
+      if(Right_E>0 && Right_dE>0) {
+	sumRight2 += sigma;
+	sumSquareRight2 += sigma*sigma;
+      }
     }
   }    
   Double_t estLeft = sumLeft/nLeft;
@@ -227,6 +241,13 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t estRight = sumRight/nRight;
   Double_t estSquareRight = sumSquareRight/nRight;
   Double_t varRight = TMath::Sqrt( (estSquareRight - estRight*estRight) / nRight);
+  Double_t estLeft2 = sumLeft2/nLeft;
+  Double_t estSquareLeft2 = sumSquareLeft2/nLeft;
+  Double_t varLeft2 = TMath::Sqrt( (estSquareLeft2 - estLeft2*estLeft2) / nLeft);
+  Double_t estRight2 = sumRight2/nRight;
+  Double_t estSquareRight2 = sumSquareRight2/nRight;
+  Double_t varRight2 = TMath::Sqrt( (estSquareRight2 - estRight2*estRight2) / nRight);
+
   
   ////////////////////
   // Results        //
@@ -238,16 +259,22 @@ int main(Int_t argc, Char_t *argv[]) {
 
   Double_t constant = luminosity*(pi/9.0)*(TMath::Cos(pi/36.0)-TMath::Cos(pi/18.0));
   estLeft *= constant;	varLeft *= constant;
-  estRight *= constant;	varRight *= constant;  
+  estRight *= constant;	varRight *= constant;
+  estLeft2 *= constant;		varLeft2 *= constant;
+  estRight2 *= constant;	varRight2 *= constant;
  
   std::cout << "Left Rate1 = " << Sum_L << " +- " << dSum_L << std::endl;  
   std::cout << "Right Rate1 = " << Sum_R << " +- " << dSum_R << std::endl;
-  std::cout << "Avg1 = " << (Sum_L + Sum_R)/2.0 << " +- " << dR << std::endl;
+  std::cout << "Avg1 = " << (Sum_L + Sum_R)/2.0 << std::endl;
   std::cout << "Left Rate2 = " << estLeft << " +- " << varLeft << std::endl;  
   std::cout << "Right Rate2 = " << estRight << " +- " << varRight << std::endl;
-  
-  printf("  \\\\hline %g & %g $\\pm$ %g & %g $\\pm$ %g & %g $\\pm$ %g &  %g $\\pm$ %g &\\\\ \n", 
-            d, Sum_L, dSum_L, Sum_R, dSum_R, estLeft, varLeft, estRight, varRight);
+  std::cout << "Avg2 = " << (estLeft + estRight)/2.0 << std::endl;
+  std::cout << "Left Rate3 = " << estLeft2 << " +- " << varLeft2 << std::endl;  
+  std::cout << "Right Rate3 = " << estRight2 << " +- " << varRight2 << std::endl;
+  std::cout << "Avg3 = " << (estLeft2 + estRight2)/2.0 << std::endl;  
+
+  printf("  \\\\hline %g & %g $\\pm$ %g & %g $\\pm$ %g & %g $\\pm$ %g &  %g $\\pm$ %g &\\\\ \n",
+            10000000*d, Sum_L, dSum_L, Sum_R, dSum_R, estLeft, varLeft, estRight, varRight);
   //std::cout << Sum_L << " & " << Sum_R << " & " << estLeft << " & " << estRight << std::endl;
 
   return 0;

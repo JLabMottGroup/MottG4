@@ -9,7 +9,7 @@
 // Compile with:
 //	> g++ -o Rate_Calculation_2 Rate_Calculation_2.C `root-config --cflags --glibs`
 // Run with
-//	> ./Rate_Calculation_2 0.05
+//	> ./Rate_Calculation_2 [target thickness] nFiles
 
 
 #include <iostream>
@@ -63,13 +63,17 @@ int main(Int_t argc, Char_t *argv[]) {
   const Double_t A_Au = 196.97;				// Gold atomic weight [g/mol]
   const Double_t targetCenterZ = -(3.9878);		// Target center position [mm]
   Double_t d = 1.0e-4*atof(argv[1]);			// target_thickness [cm]
+  Int_t nFiles = atoi(argv[2]);
 
-  const char* FileDir = "/home/mjmchugh/Mott/MottG4/Mott_Polarimeter/build";
+  const char* FileDir = "/lustre/expphy/volatile/hallc/qweak/mjmchugh/Mott/Round2";
   TChain* pChain = new TChain("Mott");
-  pChain->Add(Form("%s/Double_%sum.root", FileDir,argv[1]));
+  for(Int_t i=1; i<nFiles+1; i++) {
+    pChain->Add(Form("%s/Double_%sum_%i.root",FileDir,argv[1],i));
+    std::cout << "Added File " << i << std::endl;
+  }
 
-  Int_t nBinsTheta = 100;
-  Int_t nBinsPhi = 100;
+  Int_t nBinsTheta = 200;
+  Int_t nBinsPhi = 200;
   TH2F* hNhit_Left = new TH2F("hNhit_Left","hNhit_Left",nBinsTheta,170.0,175.0,nBinsPhi,-10.0,10.0);
   TH2F* hNhit_Right = new TH2F("hNhit_Right","hNhit_Right",nBinsTheta,170.0,175.0,nBinsPhi,170.0,190.0);
   TH2F* hNthrown_Left = new TH2F("hNthrown_Left","hNthrown_Left",nBinsTheta,170.0,175.0,nBinsPhi,-10.0,10.0);
@@ -89,7 +93,7 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t SecondaryVertexX, SecondaryVertexY, SecondaryVertexZ;
   Double_t Theta;
   Double_t Phi;
-  Int_t nEntries = 5000000;
+  Int_t nEntries = pChain->GetEntries();
 
   pChain->SetBranchAddress("Left_E",&Left_E);
   pChain->SetBranchAddress("Left_dE",&Left_dE);
@@ -116,10 +120,10 @@ int main(Int_t argc, Char_t *argv[]) {
     
     if(-10<=Phi&&Phi<=10) {
       hNthrown_Left->Fill(Theta,Phi);
-      if(Left_E>0 && Left_dE>0) hNhit_Left->Fill(Theta,Phi);
+      if( (4.6<Left_E&&Left_E<5.1) && Left_dE>0) hNhit_Left->Fill(Theta,Phi);
     } else {
       hNthrown_Right->Fill(Theta,Phi);
-      if(Right_E>0 && Right_dE>0) hNhit_Right->Fill(Theta,Phi);      
+      if( (4.6<Right_E&&Right_E<5.1) && Right_dE>0) hNhit_Right->Fill(Theta,Phi);      
     }
     
   }
@@ -151,18 +155,25 @@ int main(Int_t argc, Char_t *argv[]) {
     Double_t sigma1 = PrimaryCrossSection;
     Double_t sigma2 = SecondaryCrossSection;
     Double_t epsilon;
-     
+    
+    Double_t lambda = 0.182769;					// mm
+    Double_t xi = TMath::Sqrt( (SecondaryVertexX-PrimaryVertexX)*(SecondaryVertexX-PrimaryVertexX)
+			      +(SecondaryVertexY-PrimaryVertexY)*(SecondaryVertexY-PrimaryVertexY)
+			      +(SecondaryVertexZ-PrimaryVertexZ)*(SecondaryVertexZ-PrimaryVertexZ));
+
+    Double_t I_xi = TMath::Exp(-xi/lambda);
+
     // Find if it's an event to the left or the right
     if (-10<=Phi && Phi<=10) {
       nLeft++;
       epsilon = fepsilonLeft->Eval(Theta,Phi);
-      sumLeft += sigma1*sigma2*epsilon;
-      sumSquareLeft += sigma1*sigma2*epsilon*sigma1*sigma2*epsilon;
+      sumLeft += sigma1*sigma2*epsilon*I_xi;
+      sumSquareLeft += sigma1*sigma2*epsilon*I_xi*sigma1*sigma2*epsilon*I_xi;
     } else {
       nRight++;
       epsilon = fepsilonRight->Eval(Theta,Phi);
-      sumRight += sigma1*sigma2*epsilon;
-      sumSquareRight += sigma1*sigma2*epsilon*sigma1*sigma2*epsilon;
+      sumRight += sigma1*sigma2*epsilon*I_xi;
+      sumSquareRight += sigma1*sigma2*epsilon*I_xi*sigma1*sigma2*epsilon*I_xi;
     }
   }    
   Double_t estLeft = sumLeft/nLeft;
@@ -181,7 +192,7 @@ int main(Int_t argc, Char_t *argv[]) {
   varRight *= constant;                      
   
   printf(" \\hline %g & %i & %g $\\pm$ %g & %g $\\pm$ %g \\\\ \n", 
-            d*10000000, nEntries, rateLeft, varLeft, rateRight, varRight);
+            d*10000000, nEntries, rateLeft/100.0, varLeft/100.0, rateRight/100.0, varRight/100.0);
   return 0;
 }
 

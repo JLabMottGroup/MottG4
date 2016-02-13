@@ -3,21 +3,19 @@
   <Email email="mjmchugh@jlab.org" request="false" job="true"/>
   <Project name="qweak"/>
   <Track name="analysis"/>
-  <Name name="MottDumpAnal_1"/>
-  <OS name="centos62"/>
+  <Name name="MottSim"/>
+  <OS name="centos65"/>
   <Command><![CDATA[
 source /home/mjmchugh/.login
 cd /u/home/mjmchugh/MottG4/scripts
-./DumpPlate 1
+bash rate_submit_2
   ]]></Command>
 
-  <Memory space="1200" unit="MB"/>
+  <Memory space="4000" unit="MB"/>
   <TimeLimit unit="minutes" time="4320"/>
 
 
   <Job>
-    <Stdout dest="/u/home/mjmchugh/MottG4/output/MottDumpAnalFull_1.out"/>
-    <Stderr dest="/u/home/mjmchugh/MottG4/output/MottDumpAnalFull_1.err"/>
   </Job>
 
 </Request>
