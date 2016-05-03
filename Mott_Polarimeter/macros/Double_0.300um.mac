@@ -1,0 +1,9 @@
+#Run at 5 MeV on a gold foil
+
+/Beam/SetEnergySpread 150 keV
+/Beam/SetBeamEnergy 5.0 MeV
+/PrimaryGenerator/EventType 2
+/PrimaryGenerator/SetThetaMin 171 deg
+/PrimaryGenerator/SetThetaMax 174 deg
+/EventAction/StoreAllEvents 1
+/Target/SetTargetLength 0.300 um
