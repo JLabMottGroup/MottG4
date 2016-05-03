@@ -73,7 +73,9 @@ MottPrimaryGeneratorMessenger::MottPrimaryGeneratorMessenger(MottPrimaryGenerato
   eventTypeCmd->SetGuidance(" 0 - Throw from upstream into the target ");
   eventTypeCmd->SetGuidance(" 1 - Throw single scattered e- at the detectors (default)");
   eventTypeCmd->SetGuidance(" 2 - Throw double scattered e- at the detectors");
-  eventTypeCmd->SetGuidance(" 3 - Throw single scattered e- into user specified angular range");
+  eventTypeCmd->SetGuidance(" 3 - Throw single scattered e- at the detectors [Rejection Sampling]");
+  eventTypeCmd->SetGuidance(" 4 - Throw double scattered e- at the detectors [Rejection Sampling]");
+  eventTypeCmd->SetGuidance(" 5 - Throw single scattered e- isotropically in specified angular range");
   eventTypeCmd->SetParameterName("EventType", false);
   eventTypeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
