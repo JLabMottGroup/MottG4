@@ -42,6 +42,7 @@
 #include "G4ParticleDefinition.hh"
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 #include "Randomize.hh"
 #include <iostream>
@@ -70,7 +71,7 @@ MottPrimaryGeneratorAction::MottPrimaryGeneratorAction(
   ThetaMin = 0;
   ThetaMax = pi;
   PhiMin = 0;
-  PhiMax = 2*pi;  
+  PhiMax = 2*pi;
 
   // Set default 
   beamEnergy = 5.0*MeV; 	// kinetic energy
@@ -305,10 +306,10 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       n_1 = n_1.unit();
       Theta1 = d_1.theta();
       Phi1 = d_1.phi();
-      G4double CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
-      G4double S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
-      G4double T1 = InterpolateT(Theta1/deg,Energy1/MeV);
-      G4double U1 = InterpolateU(Theta1/deg,Energy1/MeV);
+      CS1 = InterpolateCrossSection(Theta1/deg,Energy1/MeV);
+      S1 = InterpolateSherman(Theta1/deg,Energy1/MeV);
+      T1 = InterpolateT(Theta1/deg,Energy1/MeV);
+      U1 = InterpolateU(Theta1/deg,Energy1/MeV);
       CS1 = CS1*(1 + S1*n_1.dot(P_1));    
       G4ThreeVector P_2 = CalculateNewPol(n_1,P_1,S1,T1,U1);
       Px2 = P_2.x();
@@ -319,11 +320,11 @@ void MottPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double Theta2 = d_1.angle(d_2);
       G4ThreeVector n_2 = d_1.cross(d_2);
       n_2 = n_2.unit();
-      G4double Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
-      G4double CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
-      G4double S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
-      G4double T2 = InterpolateT(Theta2/deg,Energy2/MeV);
-      G4double U2 = InterpolateU(Theta2/deg,Energy2/MeV);
+      Energy2 = Energy1 - CalculateTotalELoss(d_1_length, Energy1, TargetZ);
+      CS2 = InterpolateCrossSection(Theta2/deg,Energy2/MeV);
+      S2 = InterpolateSherman(Theta2/deg,Energy2/MeV);
+      T2 = InterpolateT(Theta2/deg,Energy2/MeV);
+      U2 = InterpolateU(Theta2/deg,Energy2/MeV);
       CS2 = CS2*(1 + S2*n_2.dot(P_2));
       G4double CS = CS2*CS1;
       G4double rejectionThrow = MaxThrow*G4UniformRand();

@@ -133,7 +133,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   G4Element* Mn = new G4Element(name="Manganese", symbol="Mn", z=25, a=54.938*g/mole);
   
   G4Material* Steel = new G4Material(name="StainlessSteel", density=7.74*g/cm3, 
-                                     nel=4, kStateSolid, STP_Temperature);
+                                     nel=4, kStateSolid);
   Steel->AddElement(Fe, fractionmass=0.7075);
   Steel->AddElement(Cr, fractionmass=0.19);
   Steel->AddElement(Ni, fractionmass=0.0925);
@@ -141,7 +141,7 @@ G4VPhysicalVolume* MottDetectorConstruction::Construct()
   
   G4Material* Air = G4NistManager::Instance()->FindOrBuildMaterial("G4_AIR");
   G4Material* Vacuum = new G4Material("Vacuum", density=0.5e-13*g/cm3, 
-  				      nel=1, kStateGas, temperature=STP_Temperature, 
+  				      nel=1, kStateGas, temperature=298.15*kelvin, 
   				      pressure=1.0e-10*bar);
   Vacuum->AddMaterial(Air, fractionmass=1.0);
   

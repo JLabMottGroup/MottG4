@@ -40,6 +40,7 @@
 #include "G4ios.hh"
 
 #include <sstream>
+#include <stdlib.h>     /* getenv */
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -48,8 +49,8 @@ MottRunAction::MottRunAction()
   G4cout << "\tEntering MottRunAction::MottRunAction()" <<G4endl; 
 
   //Default File names and locations.
-  rootFileName = "/home/mjmchugh/MottG4/Mott_Polarimeter/MottSim.root";
-   
+  G4String defaultPath = getenv("MOTTG4DIR");
+  rootFileName = defaultPath + "/Mott_Polarimeter/MottSim.root";
   myMessenger = new MottRunActionMessenger(this);
   
   G4cout << "\tLeaving MottRunAction::MottRunAction()" <<G4endl; 
