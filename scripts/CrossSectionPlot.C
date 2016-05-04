@@ -1,9 +1,17 @@
-// 
+//////////////////////////////////////
+// DEPRICATED DEPRICATED DEPRICATED //
+// DEPRICATED DEPRICATED DEPRICATED //
+// DEPRICATED DEPRICATED DEPRICATED //
+//////////////////////////////////////
+
+
+
+
 // CrossSectionPlot.C
 // Martin McHugh
 // 2014-06-18
 //
-// For plotting E and dE Energies and PMT responses. 
+// For plotting CrossSections and spin functions. 
 
 // Compile with:
 //	> g++ -o CrossSectionPlot CrossSectionPlot.C `root-config --cflags --glibs`

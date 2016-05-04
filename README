@@ -1,2 +1,19 @@
 This is the GEANT4 model of the JLab 5 MeV Mott Polarimeter. Any questions should be referred to 
 Martin McHugh at mjmchugh@jlab.org.
+
+The MottG4 repository contains the following directories:
+
+CrossSections/		Scattering Functions based on calculations from prior to 2012
+			Also contains CrossSectionTests.nb which was used to check event generators 				and compare new theory calculations to the extant results. 
+			
+Mott_Polarimeter/ 	Houses the actual GEANT4 code for the simulation as well as macros for
+ 			running the simulation in batch mode and scripts for interfacing with the
+ 			Auger system for job submissions to the JLab farm machines
+
+NewMottPhysics/ 	Theory Calculations for single Mott scattering provided by Xavier. Forms
+			the basis of the simulations generators. If we ever get new theory
+			calculations, This needs to be altered.
+			
+scripts/		Contains scripts for analyzing the simulation outputs. Some are depricated
+			since they are based on older versions of the simulation but may be of use
+			for future efforts.

@@ -308,7 +308,7 @@ void MottPhysicsList::ConstructOp()
   theCerenkovProcess->SetTrackSecondariesFirst(true);
   
   // Scintillation Process
-  theScintillationProcess->SetScintillationYieldFactor(1.0); 		// Possibly multiply defined.
+  theScintillationProcess->SetScintillationYieldFactor(1.0); 	// Possibly multiply defined.
   theScintillationProcess->SetTrackSecondariesFirst(true);
 
   theParticleIterator->reset();
