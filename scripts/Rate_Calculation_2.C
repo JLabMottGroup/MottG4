@@ -183,7 +183,9 @@ int main(Int_t argc, Char_t *argv[]) {
   Double_t estSquareRight = sumSquareRight/nRight;
   Double_t varRight = TMath::Sqrt( (estSquareRight - estRight*estRight) / nRight);  
 
-  //Now to give the proper units and print 
+  //Now to give the proper units and print ///IMPORTANT
+  //this quantity represents the normalization of the integral of the phase space
+  ////// in TN as 1/C
   Double_t constant = (2.0/9.0)*pi*pi*(TMath::Cos(pi/36.0)-TMath::Cos(pi/18.0))
                       *N_Beam*(N_A*rho_Au*d/A_Au)*(N_A*rho_Au*d/A_Au);
   Double_t rateLeft = constant*estLeft;
