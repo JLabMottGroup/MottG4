@@ -192,7 +192,7 @@ my $xmlfile =
 "
 <Request>
   <Email email=\"$user\@jlab.org\" request=\"false\" job=\"true\"/>
-  <Project name=\"qweak\"/>
+  <Project name=\"cis\"/>
   <Track name=\"simulation\"/>
   <Name name=\"$basename\"/>
   <OS name=\"centos65\"/>
@@ -223,7 +223,7 @@ if( $tapedir ) {
 "
 <Request>
   <Email email=\"$user\@jlab.org\" request=\"false\" job=\"true\"/>
-  <Project name=\"qweak\"/>
+  <Project name=\"cis\"/>
   <Track name=\"simulation\"/>
   <Name name=\"$basename\"/>
   <OS name=\"centos65\"/>
