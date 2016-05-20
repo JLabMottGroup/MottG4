@@ -1,0 +1,20 @@
+/Target/SetTargetLength 0.100 um
+
+/PrimaryGenerator/EventType 3
+/Analysis/RootFileName Single_1.root
+/run/beamOn 1000
+
+/PrimaryGenerator/EventType 4
+/Analysis/RootFileName Double_1.root
+/run/beamOn 1000
+
+/Target/SetTargetLength 0.200 um
+
+/PrimaryGenerator/EventType 3
+/Analysis/RootFileName Single_2.root
+/run/beamOn 1000
+
+/PrimaryGenerator/EventType 4
+/Analysis/RootFileName Double_2.root
+/run/beamOn 1000
+
