@@ -60,7 +60,7 @@ int main(Int_t argc, Char_t *argv[]) {
   const Double_t N_Beam = 6.241e12;			// electrons per second per micrioamp [Hz/uA]  
   const Double_t N_A = 6.022e23;			// molcules per mol [1/mol]
   const Double_t rho_Au = 19.30;			// Gold density [g/cm^3]
-  const Double_t A_Au = 196.97;				// Gold atomic weight [g/mol]
+  const Double_t A_Au = 196.97;			// Gold atomic weight [g/mol]
   const Double_t targetCenterZ = -(3.9878);		// Target center position [mm]
   Double_t d = 1.0e-4*atof(argv[1]);			// target_thickness [cm]
   Int_t nFiles = atoi(argv[2]);
